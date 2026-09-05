@@ -902,6 +902,35 @@
 </div>
 
 <script>
+// This app was originally built to run inside Claude's chat preview, which
+// provides a special window.storage API for saving data across sessions.
+// Once downloaded and opened as a standalone page (locally, or hosted on
+// GitHub Pages), that API doesn't exist — so every save/load would silently
+// fail and the app would reset on every reload. This fills in the same
+// interface using localStorage, the standard browser storage every real
+// browser supports, so the app persists data correctly wherever it's run.
+if (!window.storage) {
+  window.storage = {
+    async get(key) {
+      const v = localStorage.getItem(key);
+      return v === null ? null : { key, value: v, shared: false };
+    },
+    async set(key, value) {
+      localStorage.setItem(key, value);
+      return { key, value, shared: false };
+    },
+    async delete(key) {
+      const existed = localStorage.getItem(key) !== null;
+      localStorage.removeItem(key);
+      return { key, deleted: existed, shared: false };
+    },
+    async list(prefix) {
+      const keys = Object.keys(localStorage).filter(k => !prefix || k.startsWith(prefix));
+      return { keys, prefix, shared: false };
+    }
+  };
+}
+
 const STORAGE_KEY = 'ledger:holdings';
 const WALLET_KEY = 'ledger:wallets';
 const ACHV_KEY = 'ledger:achievements';
