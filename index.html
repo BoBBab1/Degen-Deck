@@ -792,6 +792,25 @@
     <div class="empty" id="rhNewsEmpty" style="display:none;">No articles loaded yet. Tap refresh.</div>
 
     <div class="news-header" style="margin-top:32px;">
+      <div class="section-label"><span>Your Robinhood Chain Tokens</span></div>
+      <button class="refresh-btn" id="rhTokensRefreshBtn">↻ refresh prices</button>
+    </div>
+    <div class="add-form" style="margin-top:8px;">
+      <div class="add-form-title">Add a token by contract address</div>
+      <div class="form-row">
+        <input type="text" id="rhTokenAddressInput" placeholder="0x… token contract" autocomplete="off" autocapitalize="off" autocorrect="off">
+      </div>
+      <div class="form-row" style="margin-top:8px;">
+        <input type="text" inputmode="decimal" id="rhTokenAmountInput" placeholder="Amount held" autocomplete="off">
+      </div>
+      <button class="add-btn" id="rhTokenAddBtn">+ Add token</button>
+      <div class="status" id="rhTokenStatus"></div>
+      <div class="rank-detail" style="margin-top:8px;">Tip: tap any token in the trending list below, or search it on <a href="https://robinhoodchain.blockscout.com" target="_blank" rel="noopener noreferrer" style="color:var(--brass);">robinhoodchain.blockscout.com</a> — copy its contract address from there.</div>
+    </div>
+    <div id="rhTokenList" style="margin-top:8px;"></div>
+    <div class="empty" id="rhTokenEmpty" style="display:none;">No Robinhood Chain tokens added yet.</div>
+
+    <div class="news-header" style="margin-top:32px;">
       <div class="section-label"><span>Trending Tokens · 24H</span></div>
       <button class="refresh-btn" id="trendingRefreshBtn">↻ refresh tokens</button>
     </div>
@@ -808,7 +827,7 @@
     <div class="empty" id="trendingEmpty" style="display:none;">No token data loaded yet. Tap refresh.</div>
 
     <div class="footer-note" style="margin-top:20px;">
-      <strong>Where this comes from —</strong> news is pulled the same way as the Quantum tab, searched for "Robinhood Chain" instead. Trending tokens come from DEX Screener's public API, filtered to pairs trading on Robinhood Chain and ranked by 24h price change — this is a best-effort sample of indexed pairs (weighted toward higher-liquidity pairs to filter out noise), not a guaranteed complete list of every token on the chain. Nothing here is investment advice; DEX tokens on a brand-new chain carry real, sometimes total, loss risk.
+      <strong>Where this comes from —</strong> news is pulled the same way as the Quantum tab, searched for "Robinhood Chain" instead. Your added tokens and the trending list both get their prices from DEX Screener's public API for pairs trading on Robinhood Chain — this is a best-effort sample of indexed pairs (weighted toward higher-liquidity pairs to filter out noise), not a guaranteed complete list of every token on the chain. A token you add needs at least one indexed trading pair to price correctly; brand-new or very illiquid tokens may not be found. Nothing here is investment advice; DEX tokens on a brand-new chain carry real, sometimes total, loss risk.
     </div>
   </div>
 
@@ -857,6 +876,7 @@ const ACHV_KEY = 'ledger:achievements';
 const PEAK_KEY = 'ledger:peakTotal';
 const QANX_RANK_KEY = 'ledger:qanxBestRank';
 const QANX_WALLETS_KEY = 'ledger:qanxWallets';
+const RH_TOKENS_KEY = 'ledger:rhTokens';
 let holdings = [];
 let wallets = [];
 let prices = {};
@@ -868,6 +888,7 @@ let sixMonthFetchedAt = 0; // timestamp of last 6m fetch, to avoid refetching ev
 let unlockedAchievements = new Set();
 let peakTotal = 0; // highest portfolio value ever seen on this device
 let qanxBestRank = Infinity; // best (lowest number) QANX holder rank ever seen, ETH or BSC
+let rhTokens = []; // manually-added Robinhood Chain tokens: {address, symbol, name, amount, price, url}
 
 const entryList = document.getElementById('entryList');
 const walletEntryList = document.getElementById('walletEntryList');
@@ -914,6 +935,13 @@ const qanxTopRefreshBtn = document.getElementById('qanxTopRefreshBtn');
 const qanxTopUpdatedAt = document.getElementById('qanxTopUpdatedAt');
 const qanxTopList = document.getElementById('qanxTopList');
 const qanxTopEmpty = document.getElementById('qanxTopEmpty');
+const rhTokensRefreshBtn = document.getElementById('rhTokensRefreshBtn');
+const rhTokenAddressInput = document.getElementById('rhTokenAddressInput');
+const rhTokenAmountInput = document.getElementById('rhTokenAmountInput');
+const rhTokenAddBtn = document.getElementById('rhTokenAddBtn');
+const rhTokenStatus = document.getElementById('rhTokenStatus');
+const rhTokenList = document.getElementById('rhTokenList');
+const rhTokenEmpty = document.getElementById('rhTokenEmpty');
 
 const CHAIN_META = {
   btc: { symbol: 'BTC', id: 'bitcoin', label: 'BTC' },
@@ -950,6 +978,12 @@ async function loadHoldings() {
   } catch (e) {
     wallets = [];
   }
+  try {
+    const rhResult = await window.storage.get(RH_TOKENS_KEY, false);
+    rhTokens = rhResult ? JSON.parse(rhResult.value) : [];
+  } catch (e) {
+    rhTokens = [];
+  }
   render();
 }
 
@@ -964,6 +998,14 @@ async function saveHoldings() {
 async function saveWallets() {
   try {
     await window.storage.set(WALLET_KEY, JSON.stringify(wallets), false);
+  } catch (e) {
+    console.error('Save failed', e);
+  }
+}
+
+async function saveRhTokens() {
+  try {
+    await window.storage.set(RH_TOKENS_KEY, JSON.stringify(rhTokens), false);
   } catch (e) {
     console.error('Save failed', e);
   }
@@ -1230,10 +1272,13 @@ function render() {
     walletEntryList.appendChild(row);
   });
 
+  total += rhTokens.reduce((sum, rt) => sum + (rt.price ? rt.price * rt.amount : 0), 0);
+
   const t = fmtUSD(total);
   totalValueEl.innerHTML = `${t.whole}<span class="cents">${t.cents}</span>`;
 
   renderChangeBadge(total);
+  renderRhTokens();
   updateAndRenderAchievements(total);
 
   document.querySelectorAll('.del-btn[data-idx]').forEach(btn => {
@@ -1487,16 +1532,20 @@ amountInput.addEventListener('keydown', (e) => {
 // Some mobile keyboards (esp. Android, non-US locales) send a comma instead of a
 // period for the decimal separator, or allow multiple separators to be typed.
 // Normalize on every keystroke so decimal amounts always work.
-amountInput.addEventListener('input', () => {
-  let v = amountInput.value.replace(',', '.');   // comma -> period
-  v = v.replace(/[^0-9.]/g, '');                  // strip anything but digits/period
-  const firstDot = v.indexOf('.');
-  if (firstDot !== -1) {
-    // keep only the first period, drop any extras
-    v = v.slice(0, firstDot + 1) + v.slice(firstDot + 1).replace(/\./g, '');
-  }
-  if (v !== amountInput.value) amountInput.value = v;
-});
+function normalizeDecimalInput(el) {
+  el.addEventListener('input', () => {
+    let v = el.value.replace(',', '.');   // comma -> period
+    v = v.replace(/[^0-9.]/g, '');         // strip anything but digits/period
+    const firstDot = v.indexOf('.');
+    if (firstDot !== -1) {
+      // keep only the first period, drop any extras
+      v = v.slice(0, firstDot + 1) + v.slice(firstDot + 1).replace(/\./g, '');
+    }
+    if (v !== el.value) el.value = v;
+  });
+}
+normalizeDecimalInput(amountInput);
+normalizeDecimalInput(rhTokenAmountInput);
 
 addWalletBtn.addEventListener('click', async () => {
   const chain = chainSelect.value;
@@ -1726,16 +1775,39 @@ async function fetchTrendingTokens() {
   trendingUpdatedAt.textContent = 'Updated ' + new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
     + ` · ${pairs.length} pairs sampled`;
 
-  const sorted = [...pairs].sort((a, b) => b.priceChange.h24 - a.priceChange.h24);
-  const gainers = sorted.slice(0, 10);
-  const losers = sorted.slice(-10).reverse();
+  // Keep only the highest-liquidity pair per base token, so the same token
+  // trading against two different quote assets doesn't show up twice.
+  const byToken = new Map();
+  pairs.forEach(p => {
+    const key = (p.baseToken?.address || p.baseToken?.symbol || '').toLowerCase();
+    if (!key) return;
+    const existing = byToken.get(key);
+    if (!existing || (p.liquidity?.usd || 0) > (existing.liquidity?.usd || 0)) {
+      byToken.set(key, p);
+    }
+  });
+  const deduped = [...byToken.values()];
 
-  renderTokenList(gainers, gainersList, 'up');
-  renderTokenList(losers, losersList, 'down');
+  // Gainers and losers are separate buckets by sign, not just "top and bottom
+  // of one sorted list" — a small sample can have fewer than 10 pairs actually
+  // down, and grabbing the tail regardless of sign mislabels gainers as losers.
+  const gainers = deduped.filter(p => p.priceChange.h24 > 0).sort((a, b) => b.priceChange.h24 - a.priceChange.h24).slice(0, 10);
+  const losers = deduped.filter(p => p.priceChange.h24 < 0).sort((a, b) => a.priceChange.h24 - b.priceChange.h24).slice(0, 10);
+
+  renderTokenList(gainers, gainersList, 'up', 'No gainers found in this sample — try refresh.');
+  renderTokenList(losers, losersList, 'down', 'No losers found in this sample — try refresh.');
 }
 
-function renderTokenList(pairs, listEl, direction) {
+function renderTokenList(pairs, listEl, direction, emptyText) {
   listEl.innerHTML = '';
+  if (pairs.length === 0) {
+    const note = document.createElement('div');
+    note.className = 'token-pair';
+    note.style.padding = '6px 0';
+    note.textContent = emptyText;
+    listEl.appendChild(note);
+    return;
+  }
   pairs.forEach(p => {
     const pct = p.priceChange.h24;
     const priceStr = p.priceUsd ? '$' + parseFloat(p.priceUsd).toLocaleString('en-US', { maximumFractionDigits: parseFloat(p.priceUsd) < 1 ? 6 : 2 }) : '—';
@@ -1761,7 +1833,134 @@ function renderTokenList(pairs, listEl, direction) {
 
 trendingRefreshBtn.addEventListener('click', fetchTrendingTokens);
 
-// --- QANX holder rank -------------------------------------------------
+// --- Manually-tracked Robinhood Chain tokens ---------------------------
+// Auto-detected wallet tracking only reads native ETH balance on Robinhood
+// Chain (see the Track a Wallet form) — it has no way to know which ERC-20
+// tokens a wallet holds. This lets you add specific tokens (like the small-cap
+// tokenized-stock or meme tokens the wallet tracker can't see) by contract
+// address instead, priced the same way as the trending list.
+async function fetchRhTokenInfo(address) {
+  try {
+    const res = await fetch(`https://api.dexscreener.com/tokens/v1/robinhood/${address}`);
+    if (!res.ok) return null;
+    const pairs = await res.json();
+    if (!Array.isArray(pairs) || pairs.length === 0) return null;
+    // Prefer the highest-liquidity pair for the most reliable price.
+    const best = pairs.reduce((a, b) => (b.liquidity?.usd || 0) > (a.liquidity?.usd || 0) ? b : a);
+    return {
+      symbol: best.baseToken?.symbol || '?',
+      name: best.baseToken?.name || '',
+      price: best.priceUsd ? parseFloat(best.priceUsd) : null,
+      url: best.url || null
+    };
+  } catch (e) {
+    return null;
+  }
+}
+
+async function addRhToken() {
+  const address = rhTokenAddressInput.value.trim();
+  const amount = parseFloat(rhTokenAmountInput.value);
+
+  rhTokenStatus.textContent = '';
+  rhTokenStatus.className = 'status';
+
+  if (!address || !/^0x[a-fA-F0-9]{40}$/.test(address)) {
+    rhTokenStatus.textContent = 'Paste a valid token contract address';
+    rhTokenStatus.className = 'status err';
+    return;
+  }
+  if (!amount || amount <= 0) {
+    rhTokenStatus.textContent = 'Enter the amount you hold';
+    rhTokenStatus.className = 'status err';
+    return;
+  }
+  if (rhTokens.some(t => t.address.toLowerCase() === address.toLowerCase())) {
+    rhTokenStatus.textContent = 'Already tracking that token — delete it first to re-add';
+    rhTokenStatus.className = 'status err';
+    return;
+  }
+
+  rhTokenAddBtn.disabled = true;
+  rhTokenAddBtn.textContent = 'Looking up…';
+
+  const info = await fetchRhTokenInfo(address);
+
+  rhTokenAddBtn.disabled = false;
+  rhTokenAddBtn.textContent = '+ Add token';
+
+  if (!info) {
+    rhTokenStatus.textContent = "Couldn't find a trading pair for that address — double-check it's on Robinhood Chain";
+    rhTokenStatus.className = 'status err';
+    return;
+  }
+
+  rhTokens.push({ address, amount, symbol: info.symbol, name: info.name, price: info.price, url: info.url });
+  await saveRhTokens();
+  rhTokenAddressInput.value = '';
+  rhTokenAmountInput.value = '';
+  render();
+}
+
+async function refreshRhTokenPrices() {
+  if (rhTokens.length === 0) return;
+  rhTokensRefreshBtn.disabled = true;
+  rhTokensRefreshBtn.textContent = '↻ fetching…';
+
+  await Promise.all(rhTokens.map(async (t) => {
+    const info = await fetchRhTokenInfo(t.address);
+    if (info) {
+      t.price = info.price;
+      t.symbol = info.symbol;
+      t.name = info.name;
+      t.url = info.url;
+    }
+  }));
+
+  await saveRhTokens();
+  rhTokensRefreshBtn.disabled = false;
+  rhTokensRefreshBtn.textContent = '↻ refresh prices';
+  render();
+}
+
+function renderRhTokens() {
+  rhTokenList.innerHTML = '';
+  rhTokenEmpty.style.display = rhTokens.length === 0 ? 'block' : 'none';
+
+  rhTokens.forEach((t, idx) => {
+    const value = t.price ? t.price * t.amount : null;
+    const row = document.createElement('div');
+    row.className = 'entry';
+    row.innerHTML = `
+      <div class="entry-left">
+        <div class="entry-symbol">${t.symbol}</div>
+        <div class="entry-amount">${fmtAmount(t.amount)}</div>
+      </div>
+      <div class="entry-right">
+        <div>
+          <div class="entry-value">${value !== null ? '$' + value.toLocaleString('en-US', { maximumFractionDigits: 2 }) : '—'}</div>
+          <div class="entry-price">${t.price ? '$' + t.price.toLocaleString('en-US', { maximumFractionDigits: t.price < 1 ? 6 : 2 }) + ' / token' : 'no price yet'}</div>
+        </div>
+        <button class="del-btn" data-rhidx="${idx}">×</button>
+      </div>
+    `;
+    rhTokenList.appendChild(row);
+  });
+
+  document.querySelectorAll('.del-btn[data-rhidx]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.dataset.rhidx);
+      rhTokens.splice(idx, 1);
+      saveRhTokens();
+      render();
+    });
+  });
+}
+
+rhTokenAddBtn.addEventListener('click', addRhToken);
+rhTokensRefreshBtn.addEventListener('click', refreshRhTokenPrices);
+
+
 // QANX is an ERC20/BEP20 token deployed at the same address on both
 // Ethereum and BNB Smart Chain (per QANplatform's official contract repo).
 const QANX_CONTRACT = '0xAAA9214F675316182Eaa21C85f0Ca99160CC3AAA';
