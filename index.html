@@ -712,6 +712,25 @@
     <button class="refresh-btn" id="refreshBtn">↻ refresh prices</button>
   </div>
 
+  <div class="news-header" style="margin-top:24px;">
+    <div class="section-label"><span>Your Robinhood Chain Tokens</span></div>
+    <button class="refresh-btn" id="rhTokensRefreshBtn">↻ refresh prices</button>
+  </div>
+  <div class="add-form" style="margin-top:8px;">
+    <div class="add-form-title">Add a token by contract address</div>
+    <div class="form-row">
+      <input type="text" id="rhTokenAddressInput" placeholder="0x… token contract" autocomplete="off" autocapitalize="off" autocorrect="off">
+    </div>
+    <div class="form-row" style="margin-top:8px;">
+      <input type="text" inputmode="decimal" id="rhTokenAmountInput" placeholder="Amount held" autocomplete="off">
+    </div>
+    <button class="add-btn" id="rhTokenAddBtn">+ Add token</button>
+    <div class="status" id="rhTokenStatus"></div>
+    <div class="rank-detail" style="margin-top:8px;">Tip: find a token's contract address in the Robinhood Chain tab's trending list, or on <a href="https://robinhoodchain.blockscout.com" target="_blank" rel="noopener noreferrer" style="color:var(--brass);">robinhoodchain.blockscout.com</a>.</div>
+  </div>
+  <div id="rhTokenList" style="margin-top:8px;"></div>
+  <div class="empty" id="rhTokenEmpty" style="display:none;">No Robinhood Chain tokens added yet.</div>
+
   <div class="entries">
     <div class="section-label"><span>Coin</span><span>Value</span></div>
     <div id="entryList"></div>
@@ -790,25 +809,6 @@
     <div class="updated" id="rhNewsUpdatedAt">Not fetched yet</div>
     <div id="rhNewsList"></div>
     <div class="empty" id="rhNewsEmpty" style="display:none;">No articles loaded yet. Tap refresh.</div>
-
-    <div class="news-header" style="margin-top:32px;">
-      <div class="section-label"><span>Your Robinhood Chain Tokens</span></div>
-      <button class="refresh-btn" id="rhTokensRefreshBtn">↻ refresh prices</button>
-    </div>
-    <div class="add-form" style="margin-top:8px;">
-      <div class="add-form-title">Add a token by contract address</div>
-      <div class="form-row">
-        <input type="text" id="rhTokenAddressInput" placeholder="0x… token contract" autocomplete="off" autocapitalize="off" autocorrect="off">
-      </div>
-      <div class="form-row" style="margin-top:8px;">
-        <input type="text" inputmode="decimal" id="rhTokenAmountInput" placeholder="Amount held" autocomplete="off">
-      </div>
-      <button class="add-btn" id="rhTokenAddBtn">+ Add token</button>
-      <div class="status" id="rhTokenStatus"></div>
-      <div class="rank-detail" style="margin-top:8px;">Tip: tap any token in the trending list below, or search it on <a href="https://robinhoodchain.blockscout.com" target="_blank" rel="noopener noreferrer" style="color:var(--brass);">robinhoodchain.blockscout.com</a> — copy its contract address from there.</div>
-    </div>
-    <div id="rhTokenList" style="margin-top:8px;"></div>
-    <div class="empty" id="rhTokenEmpty" style="display:none;">No Robinhood Chain tokens added yet.</div>
 
     <div class="news-header" style="margin-top:32px;">
       <div class="section-label"><span>Trending Tokens · 24H</span></div>
