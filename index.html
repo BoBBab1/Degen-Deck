@@ -111,6 +111,23 @@
     margin-top: 8px;
   }
 
+  .portfolio-chart {
+    margin-top: 14px;
+    height: 140px;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    background: var(--paper-raised);
+    overflow: hidden;
+  }
+
+  .chart-status {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    color: var(--ink-soft);
+    margin-top: 6px;
+    min-height: 14px;
+  }
+
   .refresh-btn {
     background: none;
     border: 1px solid var(--rule);
@@ -518,6 +535,19 @@
   }
   .del-btn:active { opacity: 1; }
 
+  .sell-btn {
+    background: none;
+    border: none;
+    color: var(--ink-soft);
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 4px 4px;
+    opacity: 0.6;
+  }
+  .sell-btn:active { opacity: 1; }
+  .sell-btn:hover { color: var(--brass); }
+
   .empty {
     padding: 40px 0;
     text-align: center;
@@ -709,6 +739,8 @@
         <button class="tf-btn" data-tf="1y">1Y</button>
       </div>
     </div>
+    <div class="portfolio-chart" id="portfolioChart"></div>
+    <div class="chart-status" id="portfolioChartStatus">Add a holding to see a chart.</div>
     <button class="refresh-btn" id="refreshBtn">↻ refresh prices</button>
   </div>
 
@@ -942,6 +974,8 @@ const rhTokenAddBtn = document.getElementById('rhTokenAddBtn');
 const rhTokenStatus = document.getElementById('rhTokenStatus');
 const rhTokenList = document.getElementById('rhTokenList');
 const rhTokenEmpty = document.getElementById('rhTokenEmpty');
+const portfolioChart = document.getElementById('portfolioChart');
+const portfolioChartStatus = document.getElementById('portfolioChartStatus');
 
 const CHAIN_META = {
   btc: { symbol: 'BTC', id: 'bitcoin', label: 'BTC' },
@@ -1023,6 +1057,21 @@ function fmtAmount(n) {
   if (num >= 1000) return num.toLocaleString('en-US', { maximumFractionDigits: 2 });
   if (num >= 1) return num.toLocaleString('en-US', { maximumFractionDigits: 4 });
   return num.toString();
+}
+
+// Collapses individual buy/sell lots into one net-amount row per symbol, for
+// display and for achievement checks. Holdings netted down to ~0 (fully
+// sold) are dropped from this view but their lots stay in `holdings` so the
+// chart's history stays accurate.
+function groupHoldings() {
+  const map = new Map();
+  holdings.forEach(h => {
+    if (!map.has(h.symbol)) map.set(h.symbol, { symbol: h.symbol, id: h.id, amount: 0 });
+    const g = map.get(h.symbol);
+    g.amount += h.amount;
+    if (!g.id && h.id) g.id = h.id;
+  });
+  return [...map.values()].filter(g => g.amount > 1e-9);
 }
 
 const ACHIEVEMENTS = [
@@ -1143,7 +1192,7 @@ function recordQanxRank(rank) {
 
 function buildAchievementContext(total) {
   const symbols = new Set();
-  holdings.forEach(h => symbols.add(h.symbol.toUpperCase()));
+  groupHoldings().forEach(g => symbols.add(g.symbol.toUpperCase()));
   wallets.forEach(w => symbols.add(CHAIN_META[w.chain].symbol));
 
   if (total > peakTotal) {
@@ -1198,14 +1247,26 @@ function showAchievementToast(a) {
 function render() {
   entryList.innerHTML = '';
   walletEntryList.innerHTML = '';
-  emptyState.style.display = (holdings.length === 0 && wallets.length === 0) ? 'block' : 'none';
+
+  // Holdings are stored as individual lots (one entry per buy or sell) so the
+  // chart can see exactly when each change happened. For display, group lots
+  // by symbol into a single net-amount row — nobody wants to see "BTC" three
+  // times because they bought in three batches.
+  const groups = groupHoldings();
+  emptyState.style.display = (groups.length === 0 && wallets.length === 0) ? 'block' : 'none';
 
   let total = 0;
 
-  holdings.forEach((h, idx) => {
+  // Total still sums every raw lot (not the grouped view) so sells correctly
+  // net out even though this loop never touches the DOM.
+  holdings.forEach(h => {
     const price = prices[h.id];
-    const value = price ? price * h.amount : null;
-    if (value) total += value;
+    if (price) total += price * h.amount;
+  });
+
+  groups.forEach(g => {
+    const price = prices[g.id];
+    const value = price ? price * g.amount : null;
 
     const row = document.createElement('div');
     row.className = 'entry';
@@ -1220,15 +1281,16 @@ function render() {
 
     row.innerHTML = `
       <div class="entry-left">
-        <div class="entry-symbol">${h.symbol}</div>
-        <div class="entry-amount">${fmtAmount(h.amount)}</div>
+        <div class="entry-symbol">${g.symbol}</div>
+        <div class="entry-amount">${fmtAmount(g.amount)}</div>
       </div>
       <div class="entry-right">
         <div>
           <div class="entry-value">${valueStr}</div>
           <div class="entry-price">${priceStr}</div>
         </div>
-        <button class="del-btn" data-idx="${idx}">×</button>
+        <button class="sell-btn" data-symbol="${g.symbol}" title="Record a sell">−</button>
+        <button class="del-btn" data-symbol="${g.symbol}" title="Remove entirely">×</button>
       </div>
     `;
     entryList.appendChild(row);
@@ -1278,13 +1340,34 @@ function render() {
   totalValueEl.innerHTML = `${t.whole}<span class="cents">${t.cents}</span>`;
 
   renderChangeBadge(total);
+  renderPortfolioChart(selectedTimeframe);
   renderRhTokens();
   updateAndRenderAchievements(total);
 
-  document.querySelectorAll('.del-btn[data-idx]').forEach(btn => {
+  document.querySelectorAll('.del-btn[data-symbol]').forEach(btn => {
     btn.addEventListener('click', () => {
-      const idx = parseInt(btn.dataset.idx);
-      holdings.splice(idx, 1);
+      const symbol = btn.dataset.symbol;
+      if (!confirm(`Remove ${symbol} entirely, including its buy/sell history? This can't be undone.`)) return;
+      holdings = holdings.filter(h => h.symbol !== symbol);
+      saveHoldings();
+      render();
+    });
+  });
+
+  document.querySelectorAll('.sell-btn[data-symbol]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const symbol = btn.dataset.symbol;
+      const group = groupHoldings().find(g => g.symbol === symbol);
+      const currentAmount = group ? group.amount : 0;
+      const input = prompt(`How much ${symbol} did you sell? (currently holding ${fmtAmount(currentAmount)})`);
+      if (input === null) return;
+      const sold = parseFloat(input.replace(',', '.'));
+      if (!sold || sold <= 0) {
+        alert('Enter a positive amount.');
+        return;
+      }
+      const matchingId = holdings.find(h => h.symbol === symbol)?.id || null;
+      holdings.push({ symbol, id: matchingId, amount: -sold, addedAt: Date.now() });
       saveHoldings();
       render();
     });
@@ -1351,6 +1434,146 @@ function renderChangeBadge(total) {
   if (knownValue < total * 0.999) {
     changeBadge.textContent += ' (partial)';
   }
+}
+
+// --- Portfolio value chart ----------------------------------------------
+// Each holding/wallet is stamped with an addedAt timestamp when you create
+// it. The chart applies a coin's historical price to only the positions that
+// already existed at that point in time — so a coin you added yesterday
+// shows $0 before yesterday and jumps up on the day it was actually added,
+// rather than being projected backward across the whole chart. Holdings
+// saved before this feature existed default to "always held" so old data
+// doesn't suddenly show a misleading gap. It still assumes the amount you
+// hold hasn't changed since you added it — the app doesn't track partial
+// buys/sells over time, only the current amount. Manually-added Robinhood
+// Chain tokens aren't included (no free historical price source for them).
+const TIMEFRAME_DAYS = { '24h': 1, '7d': 7, '30d': 30, '6m': 180, '1y': 365 };
+let chartCache = {}; // chartCache[timeframe][coinId] = [[timestamp, price], ...]
+let chartRequestToken = 0; // guards against a slow, stale fetch overwriting a newer one
+
+async function fetchCoinHistory(id, days) {
+  try {
+    const res = await fetch(`https://api.coingecko.com/api/v3/coins/${id}/market_chart?vs_currency=usd&days=${days}`);
+    const data = await res.json();
+    return Array.isArray(data.prices) ? data.prices : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+async function renderPortfolioChart(timeframe) {
+  // Each position keeps its own addedAt so the chart can show $0 before it
+  // existed and jump up on the day it was actually added — not "current
+  // amount applied to the whole history" the way the first version worked.
+  const positions = [];
+  holdings.forEach(h => {
+    if (h.id) positions.push({ id: h.id, amount: h.amount, addedAt: h.addedAt || 0 });
+  });
+  wallets.forEach(w => {
+    const meta = CHAIN_META[w.chain];
+    if (meta && w.balance) positions.push({ id: meta.id, amount: w.balance, addedAt: w.addedAt || 0 });
+  });
+
+  const ids = [...new Set(positions.map(p => p.id))];
+  if (ids.length === 0) {
+    portfolioChart.innerHTML = '';
+    portfolioChartStatus.textContent = 'Add a holding to see a chart.';
+    return;
+  }
+
+  const myToken = ++chartRequestToken;
+  portfolioChartStatus.textContent = 'Loading chart…';
+
+  const days = TIMEFRAME_DAYS[timeframe];
+  chartCache[timeframe] = chartCache[timeframe] || {};
+  const cache = chartCache[timeframe];
+  const missing = ids.filter(id => !cache[id]);
+
+  if (missing.length > 0) {
+    const results = await Promise.all(missing.map(id => fetchCoinHistory(id, days)));
+    missing.forEach((id, i) => { cache[id] = results[i]; });
+  }
+
+  if (myToken !== chartRequestToken) return; // a newer request superseded this one
+
+  const validSeries = ids.map(id => cache[id]).filter(s => s && s.length > 1);
+  if (validSeries.length === 0) {
+    portfolioChart.innerHTML = '';
+    portfolioChartStatus.textContent = 'Could not load chart data — try refresh.';
+    return;
+  }
+
+  // Different coins can come back with slightly different point counts;
+  // align them from the most recent point backward so "now" always matches.
+  const minLen = Math.min(...validSeries.map(s => s.length));
+  const points = [];
+  for (let j = 0; j < minLen; j++) {
+    let value = 0;
+    let ts = null;
+
+    // Look up each id's price at this aligned index once, then apply it to
+    // every position on that id that already existed by this timestamp.
+    const priceAtJ = {};
+    ids.forEach(id => {
+      const s = cache[id];
+      if (s && s.length >= minLen) {
+        const point = s[s.length - minLen + j];
+        if (point) {
+          priceAtJ[id] = point[1];
+          ts = point[0];
+        }
+      }
+    });
+
+    positions.forEach(p => {
+      if (ts !== null && ts >= p.addedAt && priceAtJ[p.id] !== undefined) {
+        value += priceAtJ[p.id] * p.amount;
+      }
+    });
+
+    points.push({ t: ts, v: value });
+  }
+
+  drawPortfolioChart(points);
+  portfolioChartStatus.textContent = '';
+}
+
+function drawPortfolioChart(points) {
+  if (points.length < 2) {
+    portfolioChart.innerHTML = '';
+    return;
+  }
+
+  const values = points.map(p => p.v);
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = (max - min) || 1;
+  const w = 600, h = 140, pad = 6;
+
+  const coords = points.map((p, i) => {
+    const x = pad + (i / (points.length - 1)) * (w - pad * 2);
+    const y = pad + (h - pad * 2) * (1 - (p.v - min) / range);
+    return [x, y];
+  });
+
+  const pathD = coords.map((c, i) => (i === 0 ? 'M' : 'L') + c[0].toFixed(1) + ',' + c[1].toFixed(1)).join(' ');
+  const areaD = pathD + ` L${coords[coords.length - 1][0].toFixed(1)},${h - pad} L${coords[0][0].toFixed(1)},${h - pad} Z`;
+
+  const isUp = values[values.length - 1] >= values[0];
+  const lineColor = isUp ? '#3ADC94' : '#FF5C7A';
+
+  portfolioChart.innerHTML = `
+    <svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" style="width:100%;height:140px;display:block;">
+      <defs>
+        <linearGradient id="chartFillGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="${lineColor}" stop-opacity="0.32"/>
+          <stop offset="100%" stop-color="${lineColor}" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <path d="${areaD}" fill="url(#chartFillGrad)" stroke="none"/>
+      <path d="${pathD}" fill="none" stroke="${lineColor}" stroke-width="2" vector-effect="non-scaling-stroke"/>
+    </svg>
+  `;
 }
 
 timeframeTabs.addEventListener('click', (e) => {
@@ -1513,7 +1736,7 @@ addBtn.addEventListener('click', async () => {
     statusMsg.className = 'status ok';
   }
 
-  holdings.push({ symbol, amount, id });
+  holdings.push({ symbol, amount, id, addedAt: Date.now() });
   await saveHoldings();
   symbolInput.value = '';
   amountInput.value = '';
@@ -1570,7 +1793,7 @@ addWalletBtn.addEventListener('click', async () => {
   addWalletBtn.disabled = true;
   walletStatusMsg.textContent = 'Fetching balance…';
 
-  wallets.push({ chain, address, balance: null, error: null });
+  wallets.push({ chain, address, balance: null, error: null, addedAt: Date.now() });
   await saveWallets();
   addressInput.value = '';
   render();
@@ -1895,7 +2118,7 @@ async function addRhToken() {
     return;
   }
 
-  rhTokens.push({ address, amount, symbol: info.symbol, name: info.name, price: info.price, url: info.url });
+  rhTokens.push({ address, amount, symbol: info.symbol, name: info.name, price: info.price, url: info.url, addedAt: Date.now() });
   await saveRhTokens();
   rhTokenAddressInput.value = '';
   rhTokenAmountInput.value = '';
