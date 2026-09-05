@@ -1,948 +1,1996 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#0d0b1e">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="DegenDeck">
-<title>DEGEN DECK</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%230d0b1e'/><rect x='20' y='35' width='60' height='30' fill='%233bff6f'/><rect x='30' y='45' width='10' height='10' fill='%230d0b1e'/><rect x='60' y='45' width='10' height='10' fill='%23ff4fd8'/></svg>">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Degen Deck — Private Holdings</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-:root{
-  --bg:#0d0b1e; --panel:#161233; --panel2:#1d1840; --edge:#332a6b; --edgeD:#0a0817;
-  --txt:#e8e6ff; --txt2:#8f8ac2; --txt3:#5b5590;
-  --grn:#3bff6f; --cyn:#39d6ff; --mag:#ff4fd8; --gld:#ffd23b; --red:#ff4f5e; --pur:#a06bff;
-}
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{height:100%}
-body{
-  font-family:'VT323',monospace;font-size:20px;line-height:1.25;
-  background:var(--bg);color:var(--txt);overscroll-behavior-y:contain;
-  padding-bottom:env(safe-area-inset-bottom);
-}
-body::before{content:'';position:fixed;inset:0;z-index:-2;background:
-  radial-gradient(1px 1px at 12% 18%,#fff8 50%,transparent 51%),
-  radial-gradient(1px 1px at 78% 8%,#fff6 50%,transparent 51%),
-  radial-gradient(1px 1px at 45% 30%,#fff5 50%,transparent 51%),
-  radial-gradient(1px 1px at 88% 42%,#fff7 50%,transparent 51%),
-  radial-gradient(1px 1px at 25% 55%,#fff4 50%,transparent 51%),
-  radial-gradient(1px 1px at 65% 70%,#fff6 50%,transparent 51%),
-  radial-gradient(1px 1px at 8% 82%,#fff5 50%,transparent 51%),
-  radial-gradient(60% 45% at 50% -10%,#241b52 0%,transparent 70%),var(--bg);}
-body::after{content:'';position:fixed;inset:0;z-index:60;pointer-events:none;
-  background:repeating-linear-gradient(0deg,transparent 0 2px,rgba(0,0,0,.14) 2px 4px);mix-blend-mode:overlay}
-.px{font-family:'Press Start 2P',monospace;line-height:1.6}
-.pix{image-rendering:pixelated;display:inline-block;vertical-align:middle;flex:none}
-#app{max-width:520px;margin:0 auto;padding:calc(12px + env(safe-area-inset-top)) 14px 100px}
-/* ===== panels (NES bevel) ===== */
-.panel{background:var(--panel);border:3px solid;border-color:var(--edge) var(--edgeD) var(--edgeD) var(--edge);
-  outline:2px solid var(--edgeD);margin-bottom:14px;padding:14px;position:relative}
-.panel.hi{background:linear-gradient(180deg,#1d1748,#141031);border-color:#4b3fa0 var(--edgeD) var(--edgeD) #4b3fa0}
-.ptitle{position:absolute;top:-12px;left:10px;background:var(--bg);padding:2px 8px;
-  font-family:'Press Start 2P',monospace;font-size:8px;color:var(--grn);letter-spacing:1px;text-transform:uppercase}
-.ptitle.m{color:var(--mag)} .ptitle.c{color:var(--cyn)} .ptitle.g{color:var(--gld)}
-h3.sec{font-family:'Press Start 2P',monospace;font-size:8px;color:var(--txt2);margin:20px 2px 12px;letter-spacing:1px;text-transform:uppercase}
-/* ===== topbar ===== */
-.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
-.logo{font-size:13px;color:var(--grn);text-shadow:3px 3px 0 #0a3, 0 0 14px #3bff6f66}
-.iconbtn{width:40px;height:40px;background:var(--panel2);border:3px solid;border-color:var(--edge) var(--edgeD) var(--edgeD) var(--edge);
-  display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--txt)}
-.iconbtn:active{transform:translate(1px,1px)}
-.iconbtn.spin .pix{animation:spin 1s steps(8) infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-/* ===== hero ===== */
-.lbl{font-family:'Press Start 2P',monospace;font-size:7px;color:var(--txt2);letter-spacing:2px;text-transform:uppercase}
-.total{font-family:'Press Start 2P',monospace;font-size:24px;color:#fff;margin:12px 0 8px;
-  text-shadow:0 0 16px #a06bff88, 3px 3px 0 #241b52}
-.chg{font-size:20px}
-.up{color:var(--grn)} .down{color:var(--red)}
-.rankrow{display:flex;align-items:center;gap:8px;margin-top:14px;flex-wrap:wrap}
-.badge{display:inline-flex;align-items:center;gap:7px;padding:5px 10px;background:#0e0b22;
-  border:2px solid var(--edge);font-family:'Press Start 2P',monospace;font-size:7px;text-transform:uppercase}
-.badge.gold{border-color:var(--gld);color:var(--gld)}
-.xpwrap{margin-top:16px}
-.bar{height:16px;background:#0a0819;border:2px solid var(--edgeD);position:relative;overflow:hidden}
-.fill{height:100%;background:linear-gradient(180deg,#6dffa0,#18c853);box-shadow:0 0 10px #3bff6f88;transition:width .8s steps(20)}
-.fill.hp{background:linear-gradient(180deg,#ff7a92,#e0284a)}
-.bar::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 8px,rgba(0,0,0,.28) 8px 10px)}
-.xptxt{display:flex;justify-content:space-between;font-family:'Press Start 2P',monospace;font-size:7px;color:var(--txt2);margin-top:6px}
-/* ===== rows ===== */
-.row{display:flex;align-items:center;gap:12px;padding:10px 0}
-.row+.row{border-top:2px dashed #2a2456}
-.coinicon{width:38px;height:38px;flex:none;display:flex;align-items:center;justify-content:center;
-  background:var(--panel2);border:2px solid var(--edge);font-family:'Press Start 2P',monospace;font-size:12px;color:var(--gld);overflow:hidden}
-.coinicon img{width:100%;height:100%;object-fit:cover;image-rendering:auto}
-.rmain{flex:1;min-width:0}
-.rname{font-size:21px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.rsub{font-size:17px;color:var(--txt2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.rright{text-align:right}
-.rval{font-size:21px;color:#fff}
-.rchg{font-size:17px}
-/* ===== loot split bar ===== */
-.splitbar{display:flex;height:22px;border:2px solid var(--edgeD);overflow:hidden;margin-bottom:12px}
-.splitbar div{height:100%}
-.legend{font-size:17px;color:var(--txt2)}
-.legend .li{display:flex;align-items:center;gap:8px;margin:3px 0}
-.dot{width:10px;height:10px;flex:none;border:2px solid var(--edgeD)}
-/* ===== tabs ===== */
-.tabbar{position:fixed;bottom:0;left:0;right:0;z-index:70;display:flex;justify-content:center;
-  padding:8px 12px calc(8px + env(safe-area-inset-bottom));pointer-events:none}
-.tabinner{pointer-events:auto;display:flex;gap:4px;background:#100d26;border:3px solid;
-  border-color:var(--edge) var(--edgeD) var(--edgeD) var(--edge);outline:2px solid var(--edgeD);padding:6px}
-.tab{border:none;background:transparent;color:var(--txt3);font-family:'Press Start 2P',monospace;font-size:6px;
-  padding:8px 9px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;text-transform:uppercase}
-/* ===== news ===== */
-.nitem{display:block;padding:11px 0;text-decoration:none;color:var(--txt)}
-.nitem+.nitem{border-top:2px dashed #2a2456}
-.nitem:active{background:var(--panel2)}
-.ntitle{font-size:19px;line-height:1.15;color:#fff;margin-bottom:3px}
-.nmeta{font-size:15px;color:var(--txt2)}
-.tab .pix{opacity:.45;filter:grayscale(.8)}
-.tab.active{background:#221b52;color:var(--grn);box-shadow:inset 0 0 0 2px var(--edgeD)}
-.tab.active .pix{opacity:1;filter:none}
-/* ===== buttons & forms ===== */
-.btn{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:13px;border:none;cursor:pointer;
-  background:var(--grn);color:#06240f;font-family:'Press Start 2P',monospace;font-size:9px;text-transform:uppercase;
-  box-shadow:0 5px 0 #0a5c28, 0 5px 0 2px var(--edgeD);margin-bottom:8px}
-.btn:active{transform:translateY(4px);box-shadow:0 1px 0 #0a5c28}
-.btn.ghost{background:var(--panel2);color:var(--txt);box-shadow:0 5px 0 #0d0a20, 0 5px 0 2px var(--edgeD)}
-.btn.mag{background:var(--mag);color:#33052a;box-shadow:0 5px 0 #8f1b76, 0 5px 0 2px var(--edgeD)}
-.btn.sm{width:auto;flex:1;padding:11px 8px;font-size:8px}
-input{width:100%;padding:12px;background:#0a0819;border:3px solid;border-color:var(--edgeD) var(--edge) var(--edge) var(--edgeD);
-  color:var(--grn);font-family:'VT323',monospace;font-size:21px;outline:none;margin-bottom:10px;caret-color:var(--grn)}
-input::placeholder{color:var(--txt3)}
-.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
-.chip{display:inline-flex;align-items:center;gap:6px;padding:7px 10px;font-family:'Press Start 2P',monospace;font-size:7px;
-  background:#0e0b22;border:2px solid var(--edge);color:var(--txt2);cursor:pointer;text-transform:uppercase}
-.chip.on{border-color:var(--grn);color:var(--grn);background:#0e2417}
-/* ===== nft ===== */
-.nftgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.nft{background:var(--panel);border:3px solid;border-color:var(--edge) var(--edgeD) var(--edgeD) var(--edge);outline:2px solid var(--edgeD)}
-.nft img{width:100%;aspect-ratio:1;object-fit:cover;display:block;background:#0a0819;border-bottom:2px solid var(--edgeD)}
-.nft .ph{width:100%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;background:#0f0c26;border-bottom:2px solid var(--edgeD)}
-.nft .nfo{padding:8px 10px}
-.nft .nfo b{font-size:17px;font-weight:400;color:#fff;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.nft .nfo span{font-size:15px;color:var(--txt2)}
-/* ===== stats ===== */
-.statgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.stat{background:var(--panel);border:3px solid;border-color:var(--edge) var(--edgeD) var(--edgeD) var(--edge);
-  outline:2px solid var(--edgeD);padding:13px}
-.stat .v{font-family:'Press Start 2P',monospace;font-size:12px;margin:10px 0 6px;color:#fff;word-break:break-word}
-.stat .k{font-size:16px;color:var(--txt2);line-height:1.2}
-.stat.wide{grid-column:1/-1}
-/* ===== achievements ===== */
-.achv{display:flex;align-items:center;gap:12px;background:var(--panel);border:3px solid;
-  border-color:var(--edge) var(--edgeD) var(--edgeD) var(--edge);outline:2px solid var(--edgeD);padding:10px 12px;margin-bottom:8px}
-.achv.unlocked{border-color:#6b5b1a var(--edgeD) var(--edgeD) #6b5b1a;background:linear-gradient(180deg,#221c3e,#171233)}
-.achv.lock2{opacity:.42;filter:grayscale(.85)}
-.achv .abody{flex:1;min-width:0}
-.achv b{font-family:'Press Start 2P',monospace;font-size:8px;font-weight:400;display:block;margin-bottom:4px;color:var(--gld);text-transform:uppercase}
-.achv.lock2 b{color:var(--txt2)}
-.achv span{font-size:16px;color:var(--txt2);line-height:1.15;display:block}
-.achv .anew{font-family:'Press Start 2P',monospace;font-size:6px;color:var(--grn);border:2px solid var(--grn);padding:3px 5px}
-/* ===== misc ===== */
-.empty{text-align:center;padding:34px 16px;color:var(--txt2);font-size:19px}
-.empty .pix{margin-bottom:14px}
-.wallet-head{display:flex;align-items:center;gap:11px}
-.wava{width:40px;height:40px;flex:none;border:2px solid var(--edgeD);image-rendering:pixelated}
-.del{background:none;border:none;cursor:pointer;padding:6px}
-.modal{position:fixed;inset:0;z-index:100;background:rgba(6,4,16,.8);display:none;align-items:flex-end;justify-content:center}
-.modal.open{display:flex}
-.sheet{width:100%;max-width:520px;background:var(--panel);border:3px solid;border-color:#4b3fa0 var(--edgeD) transparent #4b3fa0;
-  outline:2px solid var(--edgeD);padding:20px 18px calc(24px + env(safe-area-inset-bottom));animation:slideup .25s steps(6)}
-@keyframes slideup{from{transform:translateY(70px);opacity:0}to{transform:none;opacity:1}}
-.sheet h2{font-family:'Press Start 2P',monospace;font-size:10px;margin-bottom:18px;color:var(--cyn);display:flex;align-items:center;gap:10px;text-transform:uppercase}
-.results{max-height:220px;overflow-y:auto;margin-bottom:8px}
-.results .row{cursor:pointer;padding:8px 6px}
-.results .row:active{background:var(--panel2)}
-.note{font-size:16px;color:var(--txt3);text-align:center;margin-top:10px;line-height:1.3}
-.toast{position:fixed;top:calc(12px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:200;width:max-content;max-width:90vw;
-  background:#0e0b22;border:3px solid var(--grn);padding:10px 16px;font-family:'Press Start 2P',monospace;font-size:8px;color:var(--grn);
-  opacity:0;pointer-events:none;transition:.25s;box-shadow:4px 4px 0 var(--edgeD);text-transform:uppercase}
-.toast.show{opacity:1}
-.skel{animation:blink 1s steps(2) infinite}
-@keyframes blink{50%{opacity:.35}}
-.privacy{display:flex;align-items:center;justify-content:center;gap:8px;font-size:16px;color:var(--txt3);margin-top:18px}
-.lvlup{position:fixed;inset:0;z-index:300;display:none;align-items:center;justify-content:center;background:rgba(6,4,16,.88)}
-.lvlup.show{display:flex}
-.lvlcard{text-align:center;animation:pop .45s steps(8)}
-@keyframes pop{from{transform:scale(.4);opacity:0}}
-.lvlcard h2{font-family:'Press Start 2P',monospace;font-size:15px;margin:18px 0 10px;color:var(--gld);text-shadow:3px 3px 0 #7a5a00}
-.lvlcard p{color:var(--txt2);font-size:18px}
-.blink{animation:blink 1.2s steps(2) infinite}
+  :root {
+    --paper: #0A0F16;
+    --paper-raised: #111A23;
+    --ink: #DCE7EC;
+    --ink-soft: #64798A;
+    --rule: rgba(79, 216, 232, 0.16);
+    --brass: #4FD8E8;
+    --brass-deep: #8AEAF4;
+    --sage: #3ADC94;
+    --rust: #FF5C7A;
+    --shadow: rgba(0, 0, 0, 0.6);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    background-image:
+      repeating-linear-gradient(0deg, transparent, transparent 27px, var(--rule) 27px, var(--rule) 28px);
+    background-attachment: local;
+  }
+
+  .wrap {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 28px 20px 100px;
+  }
+
+  header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 4px;
+    padding-bottom: 18px;
+    border-bottom: 2px solid var(--ink);
+  }
+
+  .brand {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    line-height: 1;
+  }
+
+  .brand .dot {
+    color: var(--brass);
+    animation: cursor-blink 1.1s step-end infinite;
+  }
+
+  @keyframes cursor-blink {
+    0%, 49% { opacity: 1; }
+    50%, 100% { opacity: 0; }
+  }
+
+  .tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  .total-block {
+    padding: 28px 0 22px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .total-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 6px;
+  }
+
+  .total-value {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 46px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    line-height: 1;
+    text-shadow: 0 0 22px rgba(79, 216, 232, 0.4);
+  }
+
+  .total-value .cents { font-size: 24px; color: var(--ink-soft); }
+
+  .updated {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin-top: 8px;
+  }
+
+  .refresh-btn {
+    background: none;
+    border: 1px solid var(--rule);
+    color: var(--ink);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 6px 12px;
+    border-radius: 3px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: all 0.15s ease;
+  }
+  .refresh-btn:active { transform: scale(0.97); }
+  .refresh-btn:hover { border-color: var(--brass); color: var(--brass-deep); }
+  .refresh-btn:disabled { opacity: 0.5; }
+
+  .change-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
+
+  .change-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 3px;
+    background: var(--paper-raised);
+  }
+  .change-badge.up { color: var(--sage); }
+  .change-badge.down { color: var(--rust); }
+  .change-badge.flat { color: var(--ink-soft); }
+  .change-badge.pending { color: var(--ink-soft); font-weight: 400; font-style: italic; }
+
+  .timeframe-tabs {
+    display: flex;
+    gap: 4px;
+  }
+
+  .tf-btn {
+    background: none;
+    border: 1px solid var(--rule);
+    color: var(--ink-soft);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    padding: 4px 7px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .tf-btn:hover { border-color: var(--brass); color: var(--brass-deep); }
+  .tf-btn.active {
+    background: var(--brass);
+    border-color: var(--brass);
+    color: var(--paper);
+    font-weight: 700;
+  }
+
+  .achievements { margin-top: 28px; }
+
+  .achv-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+  }
+
+  .achv-count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+  }
+
+  .achv-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+    gap: 10px;
+    margin-top: 12px;
+  }
+
+  .achv-card {
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 10px 10px 11px;
+    background: var(--paper-raised);
+    transition: all 0.2s ease;
+  }
+
+  .achv-card.locked {
+    opacity: 0.4;
+    filter: grayscale(1);
+  }
+
+  .achv-card.unlocked {
+    border-color: var(--brass);
+    box-shadow: 0 1px 4px var(--shadow);
+  }
+
+  .achv-card.new {
+    animation: achv-pop 0.5s ease;
+    border-color: var(--sage);
+  }
+
+  @keyframes achv-pop {
+    0% { transform: scale(0.85); }
+    55% { transform: scale(1.06); }
+    100% { transform: scale(1); }
+  }
+
+  .achv-emoji { font-size: 20px; line-height: 1; margin-bottom: 5px; }
+
+  .achv-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+
+  .achv-desc {
+    font-family: 'Inter', sans-serif;
+    font-size: 10.5px;
+    color: var(--ink-soft);
+    margin-top: 3px;
+    line-height: 1.35;
+  }
+
+  .achv-toast {
+    position: fixed;
+    left: 50%;
+    bottom: 24px;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--brass);
+    color: var(--paper);
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    font-size: 12px;
+    padding: 10px 16px;
+    border-radius: 6px;
+    box-shadow: 0 4px 20px rgba(79, 216, 232, 0.4), 0 4px 14px var(--shadow);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.35s ease;
+    z-index: 50;
+    white-space: nowrap;
+  }
+
+  .achv-toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .view-tabs {
+    display: flex;
+    gap: 4px;
+    margin-top: 18px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .view-tab {
+    background: none;
+    border: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.03em;
+    padding: 8px 4px 10px;
+    margin-right: 18px;
+    color: var(--ink-soft);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+  }
+
+  .view-tab.active {
+    color: var(--ink);
+    border-bottom-color: var(--brass);
+    font-weight: 600;
+  }
+
+  .view { display: none; }
+  .view.active { display: block; }
+
+  .news-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 22px;
+  }
+
+  .news-card {
+    display: block;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--rule);
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .news-title {
+    font-family: 'Inter', sans-serif;
+    font-size: 15.5px;
+    font-weight: 600;
+    line-height: 1.35;
+    color: var(--ink);
+  }
+
+  .news-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--brass-deep);
+    margin-top: 5px;
+  }
+
+  .news-snippet {
+    font-family: 'Inter', sans-serif;
+    font-size: 12.5px;
+    line-height: 1.45;
+    color: var(--ink-soft);
+    margin-top: 6px;
+  }
+
+  .token-section { margin-top: 16px; }
+
+  .token-section-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .token-section-title.up { color: var(--sage); }
+  .token-section-title.down { color: var(--rust); }
+
+  .token-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--rule);
+    text-decoration: none;
+    color: inherit;
+    gap: 10px;
+  }
+
+  .token-left { min-width: 0; }
+
+  .token-symbol {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.01em;
+  }
+
+  .token-pair {
+    font-family: 'Inter', sans-serif;
+    font-size: 10.5px;
+    color: var(--ink-soft);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .token-right {
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  .token-price {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+
+  .token-change {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 13px;
+  }
+  .token-change.up { color: var(--sage); }
+  .token-change.down { color: var(--rust); }
+
+  .rank-badge {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.05em;
+    padding: 2px 6px;
+    border-radius: 3px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  .rank-badge.exact {
+    color: var(--sage);
+    background: rgba(58, 220, 148, 0.14);
+  }
+  .rank-badge.approx {
+    color: var(--ink-soft);
+    background: rgba(100, 121, 138, 0.18);
+  }
+
+  .rank-result {
+    margin-top: 12px;
+    padding: 12px;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    background: var(--paper);
+  }
+
+  .rank-result .rank-number {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--brass);
+  }
+
+  .rank-result .rank-detail {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin-top: 4px;
+    line-height: 1.5;
+  }
+
+  .entries {
+    margin-top: 24px;
+  }
+
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 14px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .entry {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--rule);
+    gap: 12px;
+  }
+
+  .entry-left {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .entry-symbol {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.02em;
+    flex-shrink: 0;
+  }
+
+  .entry-amount {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .entry-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  .entry-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: right;
+  }
+
+  .entry-price {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-soft);
+    text-align: right;
+  }
+
+  .del-btn {
+    background: none;
+    border: none;
+    color: var(--rust);
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 4px 2px;
+    opacity: 0.6;
+  }
+  .del-btn:active { opacity: 1; }
+
+  .empty {
+    padding: 40px 0;
+    text-align: center;
+    color: var(--ink-soft);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    line-height: 1.7;
+  }
+
+  .add-form {
+    margin-top: 22px;
+    background: var(--paper-raised);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 16px;
+    box-shadow: 0 2px 10px var(--shadow);
+  }
+
+  .add-form-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 12px;
+  }
+
+  .form-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  input {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 11px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    color: var(--ink);
+    width: 100%;
+    outline: none;
+  }
+  input:focus { border-color: var(--brass); }
+  input::placeholder { color: #5A6B62; }
+
+  .form-row input:first-child { flex: 0 0 90px; text-transform: uppercase; }
+  .form-row input:last-child { flex: 1; }
+
+  .add-btn {
+    width: 100%;
+    background: var(--brass);
+    color: var(--paper);
+    border: none;
+    border-radius: 4px;
+    padding: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+    box-shadow: 0 0 0 rgba(79, 216, 232, 0);
+    transition: all 0.15s ease;
+  }
+  .add-btn:hover { box-shadow: 0 0 16px rgba(79, 216, 232, 0.45); }
+  .add-btn:active { transform: scale(0.98); }
+  .add-btn:disabled { opacity: 0.4; box-shadow: none; }
+
+  .status {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    margin-top: 10px;
+    min-height: 14px;
+  }
+  .status.err { color: var(--rust); }
+  .status.ok { color: var(--sage); }
+
+  .footer-note {
+    margin-top: 32px;
+    padding-top: 18px;
+    border-top: 1px solid var(--rule);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    line-height: 1.7;
+    color: var(--ink-soft);
+  }
+
+  .footer-note strong { color: var(--ink); }
+
+  /* Source tabs */
+  .tabs {
+    display: flex;
+    gap: 2px;
+    margin-top: 30px;
+    border-bottom: 2px solid var(--ink);
+  }
+
+  .tab {
+    flex: 1;
+    background: none;
+    border: none;
+    padding: 10px 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+  }
+
+  .tab.active {
+    color: var(--ink);
+    border-bottom-color: var(--brass);
+    font-weight: 600;
+  }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* Wallet entries */
+  .chain-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--brass-deep);
+    background: rgba(79, 216, 232, 0.15);
+    padding: 2px 6px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+
+  .wallet-addr {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 140px;
+  }
+
+  select {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 11px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    color: var(--ink);
+    outline: none;
+    flex: 0 0 90px;
+  }
+  select:focus { border-color: var(--brass); }
 </style>
 </head>
 <body>
-<div id="app">
-  <div class="topbar">
-    <div class="logo px">DEGEN&nbsp;DECK</div>
-    <button class="iconbtn" id="refreshBtn" onclick="refreshAll()" title="Refresh"><span data-ic="refresh" data-sz="20"></span></button>
+<div class="wrap">
+
+  <header>
+    <div class="brand">DEGEN DECK<span class="dot">_</span></div>
+    <div class="tag">local · private</div>
+  </header>
+
+  <div class="view-tabs" id="viewTabs">
+    <button class="view-tab active" data-view="portfolio">Portfolio</button>
+    <button class="view-tab" data-view="news">Quantum News</button>
+    <button class="view-tab" data-view="rhchain">Robinhood Chain</button>
+    <button class="view-tab" data-view="qanx">QANX Rank</button>
   </div>
-  <div id="view"></div>
-</div>
 
-<nav class="tabbar"><div class="tabinner">
-  <button class="tab active" data-tab="home" onclick="go('home')"><span data-ic="gamepad" data-sz="24"></span>Deck</button>
-  <button class="tab" data-tab="wallets" onclick="go('wallets')"><span data-ic="wallet" data-sz="24"></span>Wallets</button>
-  <button class="tab" data-tab="nfts" onclick="go('nfts')"><span data-ic="frame" data-sz="24"></span>NFTs</button>
-  <button class="tab" data-tab="news" onclick="go('news')"><span data-ic="news" data-sz="24"></span>News</button>
-  <button class="tab" data-tab="stats" onclick="go('stats')"><span data-ic="chart" data-sz="24"></span>Stats</button>
-</div></nav>
+  <div class="view active" id="view-portfolio">
 
-<!-- add coin sheet -->
-<div class="modal" id="coinModal" onclick="if(event.target===this)closeModals()">
-  <div class="sheet">
-    <h2><span data-ic="coin" data-sz="18"></span> Add a coin</h2>
-    <input id="coinSearch" placeholder="SEARCH COIN… (BTC, SOL, PEPE)" oninput="debounceSearch()">
-    <div class="results" id="coinResults"></div>
-    <div id="coinPick" style="display:none">
-      <input id="coinAmt" type="number" inputmode="decimal" placeholder="AMOUNT YOU HOLD">
-      <button class="btn" onclick="confirmCoin()">Add to deck</button>
+  <div class="total-block">
+    <div class="total-label">Total Holdings</div>
+    <div class="total-value" id="totalValue">$0<span class="cents">.00</span></div>
+    <div class="updated" id="updatedAt">No prices fetched yet</div>
+    <div class="change-row">
+      <span class="change-badge pending" id="changeBadge">—</span>
+      <div class="timeframe-tabs" id="timeframeTabs">
+        <button class="tf-btn active" data-tf="24h">24H</button>
+        <button class="tf-btn" data-tf="7d">7D</button>
+        <button class="tf-btn" data-tf="30d">30D</button>
+        <button class="tf-btn" data-tf="6m">6M</button>
+        <button class="tf-btn" data-tf="1y">1Y</button>
+      </div>
     </div>
-    <p class="note">Prices from CoinGecko's public API.<br>No account. No keys. Nothing about you is sent.</p>
+    <button class="refresh-btn" id="refreshBtn">↻ refresh prices</button>
   </div>
-</div>
 
-<!-- add wallet sheet -->
-<div class="modal" id="walletModal" onclick="if(event.target===this)closeModals()">
-  <div class="sheet">
-    <h2><span data-ic="wallet" data-sz="18"></span> Track a wallet</h2>
-    <input id="wName" placeholder="NICKNAME (E.G. MAIN VAULT)">
-    <input id="wAddr" placeholder="0x… ADDRESS (EVM)" autocapitalize="off" autocorrect="off" spellcheck="false">
-    <div class="chips" id="chainChips"></div>
-    <button class="btn" onclick="confirmWallet()">Start tracking</button>
-    <p class="note">Reads public on-chain data via Blockscout — read-only, keyless.<br>Never enter a seed phrase anywhere. This app will never ask.</p>
+  <div class="entries">
+    <div class="section-label"><span>Coin</span><span>Value</span></div>
+    <div id="entryList"></div>
+    <div id="walletEntryList"></div>
+    <div class="empty" id="emptyState">Nothing entered yet.<br>Add your first holding below.</div>
   </div>
-</div>
 
-<!-- add BEP-20 token sheet -->
-<div class="modal" id="tokModal" onclick="if(event.target===this)closeModals()">
-  <div class="sheet">
-    <h2><span data-ic="potion" data-sz="18"></span> Add BEP-20 token</h2>
-    <input id="tokAddr" placeholder="0x… TOKEN CONTRACT (BNB CHAIN)" autocapitalize="off" autocorrect="off" spellcheck="false">
-    <button class="btn" onclick="confirmToken()" id="tokBtn">Scan &amp; add</button>
-    <p class="note">Symbol &amp; decimals are read straight from the contract via public RPC.<br>Checked on every BNB Chain wallet you track.</p>
+  <div class="achievements">
+    <div class="achv-header">
+      <div class="section-label"><span>Achievements</span></div>
+      <div class="achv-count" id="achvCount">0/0</div>
+    </div>
+    <div class="achv-grid" id="achvGrid"></div>
   </div>
-</div>
 
-<div class="lvlup" id="lvlup" onclick="this.classList.remove('show')">
-  <div class="lvlcard"><span id="lvlupIcon"></span><h2 class="px" id="lvlupTxt">LEVEL UP!</h2><p class="blink">— tap to continue —</p></div>
+  <div class="achv-toast" id="achvToast"></div>
+
+  <div class="tabs">
+    <button class="tab active" data-panel="manual">Manual entry</button>
+    <button class="tab" data-panel="wallet">Track a wallet</button>
+  </div>
+
+  <div class="panel active" id="panel-manual">
+    <div class="add-form">
+      <div class="add-form-title">Add a holding</div>
+      <div class="form-row">
+        <input type="text" id="symbolInput" placeholder="BTC" maxlength="10" autocapitalize="characters" autocomplete="off">
+        <input type="text" inputmode="decimal" id="amountInput" placeholder="Amount, e.g. 0.25" autocomplete="off">
+      </div>
+      <button class="add-btn" id="addBtn">+ Add to ledger</button>
+      <div class="status" id="statusMsg"></div>
+    </div>
+  </div>
+
+  <div class="panel" id="panel-wallet">
+    <div class="add-form">
+      <div class="add-form-title">Track a public wallet address (read-only)</div>
+      <div class="form-row">
+        <select id="chainSelect">
+          <option value="btc">BTC</option>
+          <option value="eth">ETH</option>
+          <option value="sol">SOL</option>
+          <option value="rhc">Robinhood Chain (ETH)</option>
+        </select>
+        <input type="text" id="addressInput" placeholder="Paste public address" autocomplete="off" autocapitalize="off" autocorrect="off">
+      </div>
+      <button class="add-btn" id="addWalletBtn">+ Track this wallet</button>
+      <div class="status" id="walletStatusMsg"></div>
+    </div>
+  </div>
+
+  <div class="footer-note">
+    <strong>How this works —</strong> everything you type is saved only on this device. Prices and wallet balances are fetched directly from public APIs when you tap refresh — this is the same public information any block explorer shows. Nothing is sent to us, no wallet is connected, no signature is ever requested, no account required.
+  </div>
+
+  </div>
+
+  <div class="view" id="view-news">
+    <div class="news-header">
+      <div class="section-label"><span>Quantum Computing News</span></div>
+      <button class="refresh-btn" id="newsRefreshBtn">↻ refresh news</button>
+    </div>
+    <div class="updated" id="newsUpdatedAt">Not fetched yet</div>
+    <div id="newsList"></div>
+    <div class="empty" id="newsEmpty" style="display:none;">No articles loaded yet. Tap refresh.</div>
+    <div class="footer-note" style="margin-top:20px;">
+      <strong>Where this comes from —</strong> headlines are pulled live from a public Google News search feed for "quantum computing", read directly by your browser through a public feed-reading proxy (no scraping account, no server of ours involved). Titles/snippets link back to the original publisher — read the full story there.
+    </div>
+  </div>
+
+  <div class="view" id="view-rhchain">
+    <div class="news-header">
+      <div class="section-label"><span>Robinhood Chain News</span></div>
+      <button class="refresh-btn" id="rhNewsRefreshBtn">↻ refresh news</button>
+    </div>
+    <div class="updated" id="rhNewsUpdatedAt">Not fetched yet</div>
+    <div id="rhNewsList"></div>
+    <div class="empty" id="rhNewsEmpty" style="display:none;">No articles loaded yet. Tap refresh.</div>
+
+    <div class="news-header" style="margin-top:32px;">
+      <div class="section-label"><span>Trending Tokens · 24H</span></div>
+      <button class="refresh-btn" id="trendingRefreshBtn">↻ refresh tokens</button>
+    </div>
+    <div class="updated" id="trendingUpdatedAt">Not fetched yet</div>
+
+    <div class="token-section">
+      <div class="token-section-title up">▲ Top 10 gainers</div>
+      <div id="gainersList"></div>
+    </div>
+    <div class="token-section">
+      <div class="token-section-title down">▼ Top 10 losers</div>
+      <div id="losersList"></div>
+    </div>
+    <div class="empty" id="trendingEmpty" style="display:none;">No token data loaded yet. Tap refresh.</div>
+
+    <div class="footer-note" style="margin-top:20px;">
+      <strong>Where this comes from —</strong> news is pulled the same way as the Quantum tab, searched for "Robinhood Chain" instead. Trending tokens come from DEX Screener's public API, filtered to pairs trading on Robinhood Chain and ranked by 24h price change — this is a best-effort sample of indexed pairs (weighted toward higher-liquidity pairs to filter out noise), not a guaranteed complete list of every token on the chain. Nothing here is investment advice; DEX tokens on a brand-new chain carry real, sometimes total, loss risk.
+    </div>
+  </div>
+
+  <div class="view" id="view-qanx">
+    <div class="section-label"><span>Your QANX Rank</span></div>
+
+    <div class="add-form" style="margin-top:12px;">
+      <div class="add-form-title">Ethereum address <span class="rank-badge exact">EXACT</span></div>
+      <div class="form-row">
+        <input type="text" id="qanxEthInput" placeholder="Paste ETH address" autocomplete="off" autocapitalize="off" autocorrect="off">
+      </div>
+      <button class="add-btn" id="qanxEthBtn">Check ETH rank</button>
+      <div class="status" id="qanxEthStatus"></div>
+      <div id="qanxEthResult"></div>
+    </div>
+
+    <div class="add-form" style="margin-top:14px;">
+      <div class="add-form-title">BSC address <span class="rank-badge approx">APPROX</span></div>
+      <div class="form-row">
+        <input type="text" id="qanxBscInput" placeholder="Paste BSC address" autocomplete="off" autocapitalize="off" autocorrect="off">
+      </div>
+      <button class="add-btn" id="qanxBscBtn">Check BSC rank</button>
+      <div class="status" id="qanxBscStatus"></div>
+      <div id="qanxBscResult"></div>
+    </div>
+
+    <div class="news-header" style="margin-top:32px;">
+      <div class="section-label"><span>Top Holders · Ethereum <span class="rank-badge exact">EXACT</span></span></div>
+      <button class="refresh-btn" id="qanxTopRefreshBtn">↻ refresh</button>
+    </div>
+    <div class="updated" id="qanxTopUpdatedAt">Not fetched yet</div>
+    <div id="qanxTopList"></div>
+    <div class="empty" id="qanxTopEmpty" style="display:none;">No holder data loaded yet. Tap refresh.</div>
+
+    <div class="footer-note" style="margin-top:20px;">
+      <strong>Exact vs. approximate —</strong> the Ethereum rank comes from a free public block explorer that lists QANX holders sorted by balance, so your position is read directly off that list (accurate within its top 1,000). BSC has no equivalent free public holder-list API — full rank data there is a paid feature on BscScan — so your BSC rank is estimated using a Zipf's-law-style guess: it compares your balance to the largest known holder and assumes the drop-off between holders is steep, the way real token distributions usually are. Treat the BSC number as a rough order-of-magnitude, not a verified position.
+    </div>
+  </div>
+
 </div>
-<div class="toast" id="toast"></div>
 
 <script>
-'use strict';
-/* ============ pixel sprite engine ============ */
-const PAL={W:'#ffffff',G:'#3bff6f',g:'#18c853',C:'#39d6ff',c:'#1b8fd6',M:'#ff4fd8',m:'#c22ba0',Y:'#ffd23b',y:'#d99a12',
-  R:'#ff4f5e',r:'#c22334',O:'#ff9130',P:'#a06bff',p:'#6b3fd6',B:'#4f74ff',S:'#8f9bb3',s:'#5b6478',T:'#a8642f',t:'#7a4520',K:'#12102a'};
-const ICONS={
-gamepad:["..........","GGGGGGGGGG","GgWgGGgMgG","GWWWGGMgMG","GgWgGGgMgG","GgggggggmG","gg......gg"],
-wallet:["..........","tTTTTTTTt.","TttttttttT","TttttYYYtT","TttttYyYtT","TttttYYYtT","TttttttttT","tTTTTTTTt."],
-frame:["YYYYYYYYYY","YKKKKKKKKY","YKCcKKKKKY","YKccKKGgKY","YKKKKGGgKY","YKKGGGGgKY","YKGGGGGgKY","YYYYYYYYYY"],
-chart:["G.........","G.....CC..","G..MM.CC..","G..MM.CC..","GYYMM.CC..","GYYMM.CC..","GGGGGGGGGG"],
-coin:["..YYYYYY..",".YyyyyyyY.","YyWyyyyyyY","YyWyyyyyyY","YyyyyyyyyY","YyyyyyyyyY",".YyyyyyyY.","..YYYYYY.."],
-trophy:["YyyyyyyyyY","YyYYYYYYyY","YyYYYYYYyY",".yYYYYYYy.","..YYYYYY..","...yYYy...","....YY....","..YYYYYY.."],
-skull:["..WWWWWW..",".WWWWWWWW.",".WWWWWWWW.",".WKKWWKKW.",".WWWWWWWW.","..WWKKWW..","..W.WW.W.."],
-ghost:["..WWWWWW..",".WWWWWWWW.",".WKWWWWKW.",".WWWWWWWW.",".WWWWWWWW.",".WWWWWWWW.",".W.WW.W.W."],
-pizza:["..YYYYYY..",".YRyyRRyY.",".YyyyyyyY.","..YRyyRy..","..yyyyyy..","...YyRy...","....yy....",".....y...."],
-flame:["....R.....","...RR..R..","..RRR.RR..",".RRORRRR..",".RROORRR..",".ROOYOOR..",".ROYYYOR..","..OYYYO..."],
-refresh:["..CCCC.C..",".C....CC..","C....CCC..","C.........","C.........","C........C",".C......C.","..CCCCCC.."],
-plus:["...GG...","...GG...",".GGGGGG.",".GGGGGG.","...GG...","...GG..."],
-close:["RR....RR",".RR..RR.","..RRRR..","..RRRR..",".RR..RR.","RR....RR"],
-star:["....YY....","....YY....",".YYYYYYYY.","..yYYYYy..","...YYYY...","..YY..YY.."],
-sword:["........CC",".......CC.","......CC..","..K..CC...","..KKCC....","...KK.....","..KK.K....",".KK...K..."],
-potion:["...GG.....","...gg.....","..GGGG....",".G....G...",".G.gg.G...","G.gGGg.G..","G.GGGG.G..",".GGGGGG..."],
-moneybag:["...YY.....","..T..T....","...TT.....","..tTTt....",".TTTTTT...","TTTyYyTTT.","TTTTyTTTT.",".TTTTTTT.."],
-mountain:["....SS....","...SWWS...","..SsWWsS..",".SSsSSsSS.","SSSSSSSSSS"],
-rocket:["....CC....","...CWWC...","...CWWC...","..cCCCCc..","..cCCCCc..",".RRcCCcRR.",".R..RR..R.","....RR...."],
-chest:[".TTTTTTTT.","TtYYYYYYtT","TTTTTTTTTT","TTtYYYYtTT","TTtY..YtTT","TTtYYYYtTT","TtttttttT.",".TTTTTTTT."],
-radar:["C...CC....",".C.C..C...","..C....C..",".CCC...C..","CC.CC.....","C...CC..C.","C....CCC..",".CCCCC...."],
-heart:[".RR..RR.","RRRRRRRR","RRRRRRRR",".RRRRRR.","..RRRR..","...RR..."],
-zzz:["CCCC......","..C...cc..",".C....c...","CCCC.cc...","......s.s.","......ss.."],
-drop:["....R.....","...RRR....","..RRRRR...",".RRRRRRR..",".RRRrRRR..","..RRRRR...","...RRR...."],
-crabv:[".R......R.","..R....R..",".RRRRRRRR.","RRRWRRWRRR","RRRRRRRRRR",".RRRRRRRR.","..R.RR.R..",".R..RR..R."],
-shrimp:["...MMMM...","..MMMMMM..",".Mm..MMMM.",".M....MMm.","......MMm.",".....MMm..","....MMm...","...Mm.M..."],
-crab:[".R......R.","..R....R..",".RRRRRRRR.","RRRWRRWRRR","RRRRRRRRRR",".RRRRRRRR.","..R.RR.R..",".R..RR..R."],
-fish:["..CCCCC...",".CCCCCCC.c","CCWCCCCCcc","CCCCCCCCC.",".CCCCCCC.c","..CCCCC..."],
-octopus:["..PPPPPP..",".PPPPPPPP.",".PPWPPWPP.",".PPPPPPPP.","..PPPPPP..",".P.P.PP.P.","P.P..P..P."],
-dolphin:["....CCC...","..CCCCCC..",".CCCCCCCC.","CCWCCCCCCc",".CCCCCCC..","..CC..CC.."],
-shark:["....S.....","...SS.....","..SSSSSS..",".SSSSSSSSs","SSWSSSSSs.",".SSSSSS.s.","..SS......"],
-whale:[".....B.B..","..BBBBBB..",".BBBBBBBB.","BBWBBBBBBB","BBBBBBBBBB",".BBBBBBB..","..BB..BB.."],
-lock:["..SSSS....",".S....S...",".S....S...","SSSSSSSS..","SSSyySSS..","SSSSySSS..","SSSSSSSS.."],
-gemstone:["..CWCCCC..",".CCCCCCCC.","PCCCCCCCCP",".PPCCCCPP.","..PPPPPP..","...PPPP...","....PP...."],
-news:["WWWWWWWW..","WKKKKKKW..","WWWWWWWW..","WKKWWKKW..","WKKWWKKW..","WWWWWWWW..","WKKKKKKW..","WWWWWWWW.."]
-};
-function icon(n,sz=20){const rows=ICONS[n];if(!rows)return'';
-  const h=rows.length,w=rows[0].length;let r='';
-  rows.forEach((row,y)=>{for(let x=0;x<row.length;x++){const ch=row[x];
-    if(ch!=='.')r+=`<rect x="${x}" y="${y}" width="1" height="1" fill="${PAL[ch]||'#fff'}"/>`;}});
-  return `<svg class="pix" width="${sz}" height="${Math.round(sz*h/w)}" viewBox="0 0 ${w} ${h}" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg">${r}</svg>`;}
-function gem(color,sz=12){return `<svg class="pix" width="${sz}" height="${sz}" viewBox="0 0 7 7" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg"><path d="M3 0h1v1h1v1h1v1h1v1h-1v1h-1v1h-1v1h-1v-1h-1v-1h-1v-1h-1v-1h1v-1h1v-1h1z" fill="${color}"/><rect x="3" y="1" width="1" height="1" fill="#ffffffaa"/></svg>`;}
-
-/* ============ config & state ============ */
-const CHAINS = {
-  eth:  {name:'Ethereum', sym:'ETH', host:'https://eth.blockscout.com',      cg:'ethereum', color:'#7d9bff'},
-  base: {name:'Base',     sym:'ETH', host:'https://base.blockscout.com',     cg:'ethereum', color:'#2b5cff'},
-  arb:  {name:'Arbitrum', sym:'ETH', host:'https://arbitrum.blockscout.com', cg:'ethereum', color:'#28a0f0'},
-  op:   {name:'Optimism', sym:'ETH', host:'https://optimism.blockscout.com', cg:'ethereum', color:'#ff0420'},
-  pol:  {name:'Polygon',  sym:'POL', host:'https://polygon.blockscout.com',  cg:'polygon-ecosystem-token', color:'#8247e5'},
-  gno:  {name:'Gnosis',   sym:'xDAI',host:'https://gnosis.blockscout.com',   cg:'xdai', color:'#04b57f'},
-  bnb:  {name:'BNB Chain',sym:'BNB', rpc:'https://bsc-rpc.publicnode.com',   cg:'binancecoin', color:'#f0b90b'}
-};
-/* BEP-20 registry checked on every BNB wallet (public RPC, keyless) */
-const BSC_TOKENS=[
-  {sym:'QANX', name:'QANplatform',      contract:'0xAAA9214F675316182Eaa21C85f0Ca99160CC3AAA', dec:18, cg:'qanplatform'},
-  {sym:'USDT', name:'Tether (BSC)',     contract:'0x55d398326f99059fF775485246999027B3197955', dec:18, cg:'tether'},
-  {sym:'USDC', name:'USD Coin (BSC)',   contract:'0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d', dec:18, cg:'usd-coin'},
-  {sym:'CAKE', name:'PancakeSwap',      contract:'0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82', dec:18, cg:'pancakeswap-token'},
-  {sym:'BTCB', name:'Bitcoin BEP-20',   contract:'0x7130d2A12B9BCbFAe4f2634d864A1Ee1Ce3Ead9c', dec:18, cg:'binance-bitcoin'},
-  {sym:'ETH',  name:'Binance-Peg ETH',  contract:'0x2170Ed0880ac9A755fd29B2688956BD959F933F8', dec:18, cg:'ethereum'},
-  {sym:'WBNB', name:'Wrapped BNB',      contract:'0xbb4CdB9CBd36B01bD1cBaEF60aF814a3f6F0Ee75', dec:18, cg:'binancecoin'}
-];
-async function rpc(url,method,params){
-  const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({jsonrpc:'2.0',id:1,method,params})});
-  const j=await r.json(); if(j.error) throw new Error(j.error.message); return j.result; }
-const callBalOf=a=>'0x70a08231000000000000000000000000'+a.slice(2).toLowerCase();
-function decodeStr(hex){ try{ if(!hex||hex==='0x') return '';
-  const h=hex.slice(2); const len=parseInt(h.slice(64,128),16); let s='';
-  for(let i=0;i<len;i++) s+=String.fromCharCode(parseInt(h.slice(128+i*2,130+i*2),16));
-  return s.replace(/[^\x20-\x7e]/g,''); }catch(e){ return ''; } }
-async function fetchRpcChain(addr, chain){
-  const url=CHAINS[chain].rpc, key=addr+'_'+chain;
-  const out={native:0, tokens:[], nfts:[]};
-  try{ out.native=parseInt(await rpc(url,'eth_getBalance',[addr,'latest']),16)/1e18; }catch(e){}
-  const toks=[...BSC_TOKENS, ...(S.custom||[])];
-  await Promise.all(toks.map(async t=>{
-    try{ const res=await rpc(url,'eth_call',[{to:t.contract,data:callBalOf(addr)},'latest']);
-      const amt=parseInt(res,16)/10**(t.dec||18); if(!amt||amt<1e-9) return;
-      const p=(t.cg&&prices[t.cg])||prices['c_'+t.contract.toLowerCase()]||{};
-      out.tokens.push({sym:t.sym,name:t.name||t.sym,amt,usd:amt*(p.usd||0),icon:null,chg:p.chg??null,cg:t.cg||null});
-    }catch(e){}
-  }));
-  out.tokens.sort((a,b)=>b.usd-a.usd);
-  cache[key]=out; return out;
-}
-const RANKS=[[0,'shrimp','Shrimp'],[1e3,'crab','Crab'],[1e4,'fish','Fish'],[5e4,'octopus','Octopus'],[1e5,'dolphin','Dolphin'],[5e5,'shark','Shark'],[1e6,'whale','Whale']];
-const LS='degendeck.v1';
-let S = load();
-function load(){ try{ const s=JSON.parse(localStorage.getItem(LS)); if(s) return s; }catch(e){}
-  return {wallets:[], manual:[], custom:[], xp:0, level:1, firstOpen:Date.now(), refreshes:0, ath:0}; }
-function save(){ localStorage.setItem(LS, JSON.stringify(S)); }
-
-let cache = {};
+const STORAGE_KEY = 'ledger:holdings';
+const WALLET_KEY = 'ledger:wallets';
+const ACHV_KEY = 'ledger:achievements';
+const PEAK_KEY = 'ledger:peakTotal';
+const QANX_RANK_KEY = 'ledger:qanxBestRank';
+const QANX_WALLETS_KEY = 'ledger:qanxWallets';
+let holdings = [];
+let wallets = [];
 let prices = {};
-let eurRate = 0;
-let tab='home', selCoin=null, selChains=['eth'], loading=false;
-const eur=n=>'€'+fmt(n, n>=1000?0 : n>=1?2 : 4);
-/* dollar delta implied by a 24h % change on current value v */
-const dUsd=(v,c)=>(c==null||!v)?null:v*c/(100+c);
-const signUsd=d=>(d>=0?'+':'−')+usd(Math.abs(d));
+let lastUpdated = null;
+let selectedTimeframe = '24h';
+// changePercents[timeframe][coinId] = % change over that period
+let changePercents = { '24h': {}, '7d': {}, '30d': {}, '6m': {}, '1y': {} };
+let sixMonthFetchedAt = 0; // timestamp of last 6m fetch, to avoid refetching every refresh
+let unlockedAchievements = new Set();
+let peakTotal = 0; // highest portfolio value ever seen on this device
+let qanxBestRank = Infinity; // best (lowest number) QANX holder rank ever seen, ETH or BSC
 
-/* ============ helpers ============ */
-const $=id=>document.getElementById(id);
-const fmt=(n,d)=>{ if(n==null||isNaN(n))return'—';
-  if(d===undefined) d = n>=1000?0 : n>=1?2 : 6;
-  return n.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:d}); };
-const usd=n=>'$'+fmt(n, n>=1000?0:2);
-const short=a=>a.slice(0,6)+'…'+a.slice(-4);
-const esc=s=>String(s??'').replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
-function toast(m){ const t=$('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2400); }
-function addXP(n){ S.xp+=n; const nl=Math.floor(Math.sqrt(S.xp/60))+1;
-  if(nl>S.level){ S.level=nl; $('lvlupTxt').textContent='LEVEL '+nl+' REACHED!';
-    $('lvlupIcon').innerHTML=icon('star',64); $('lvlup').classList.add('show'); }
-  save(); }
-async function jget(u){ const r=await fetch(u); if(!r.ok) throw new Error(r.status); return r.json(); }
+const entryList = document.getElementById('entryList');
+const walletEntryList = document.getElementById('walletEntryList');
+const emptyState = document.getElementById('emptyState');
+const totalValueEl = document.getElementById('totalValue');
+const updatedAtEl = document.getElementById('updatedAt');
+const statusMsg = document.getElementById('statusMsg');
+const walletStatusMsg = document.getElementById('walletStatusMsg');
+const symbolInput = document.getElementById('symbolInput');
+const amountInput = document.getElementById('amountInput');
+const addBtn = document.getElementById('addBtn');
+const refreshBtn = document.getElementById('refreshBtn');
+const chainSelect = document.getElementById('chainSelect');
+const addressInput = document.getElementById('addressInput');
+const addWalletBtn = document.getElementById('addWalletBtn');
+const changeBadge = document.getElementById('changeBadge');
+const timeframeTabs = document.getElementById('timeframeTabs');
+const achvGrid = document.getElementById('achvGrid');
+const achvCount = document.getElementById('achvCount');
+const achvToast = document.getElementById('achvToast');
+const viewTabs = document.getElementById('viewTabs');
+const newsRefreshBtn = document.getElementById('newsRefreshBtn');
+const newsUpdatedAt = document.getElementById('newsUpdatedAt');
+const newsList = document.getElementById('newsList');
+const newsEmpty = document.getElementById('newsEmpty');
+const rhNewsRefreshBtn = document.getElementById('rhNewsRefreshBtn');
+const rhNewsUpdatedAt = document.getElementById('rhNewsUpdatedAt');
+const rhNewsList = document.getElementById('rhNewsList');
+const rhNewsEmpty = document.getElementById('rhNewsEmpty');
+const trendingRefreshBtn = document.getElementById('trendingRefreshBtn');
+const trendingUpdatedAt = document.getElementById('trendingUpdatedAt');
+const gainersList = document.getElementById('gainersList');
+const losersList = document.getElementById('losersList');
+const trendingEmpty = document.getElementById('trendingEmpty');
+const qanxEthInput = document.getElementById('qanxEthInput');
+const qanxEthBtn = document.getElementById('qanxEthBtn');
+const qanxEthStatus = document.getElementById('qanxEthStatus');
+const qanxEthResult = document.getElementById('qanxEthResult');
+const qanxBscInput = document.getElementById('qanxBscInput');
+const qanxBscBtn = document.getElementById('qanxBscBtn');
+const qanxBscStatus = document.getElementById('qanxBscStatus');
+const qanxBscResult = document.getElementById('qanxBscResult');
+const qanxTopRefreshBtn = document.getElementById('qanxTopRefreshBtn');
+const qanxTopUpdatedAt = document.getElementById('qanxTopUpdatedAt');
+const qanxTopList = document.getElementById('qanxTopList');
+const qanxTopEmpty = document.getElementById('qanxTopEmpty');
 
-/* ============ data fetching ============ */
-async function fetchWalletChain(addr, chain){
-  if(CHAINS[chain].rpc) return fetchRpcChain(addr, chain);
-  const h=CHAINS[chain].host, key=addr+'_'+chain;
-  const out={native:0, tokens:[], nfts:cache[key]?.nfts||[]};
-  try{ const a=await jget(`${h}/api/v2/addresses/${addr}`);
-    out.native=Number(a.coin_balance||0)/1e18;
-    out.nativeUsd=a.exchange_rate?out.native*Number(a.exchange_rate):null;
-  }catch(e){}
-  try{ const t=await jget(`${h}/api/v2/addresses/${addr}/token-balances`);
-    out.tokens=(t||[]).filter(x=>x.token&&x.token.exchange_rate&&Number(x.value)>0).map(x=>{
-      const dec=Number(x.token.decimals||18), amt=Number(x.value)/10**dec;
-      return {sym:x.token.symbol||'?', name:x.token.name||'Token', amt,
-              usd:amt*Number(x.token.exchange_rate), icon:x.token.icon_url||null};
-    }).filter(x=>x.usd>0.5).sort((a,b)=>b.usd-a.usd);
-  }catch(e){}
-  cache[key]=out; return out;
-}
-async function fetchNFTs(addr, chain){
-  if(!CHAINS[chain].host) return [];
-  const key=addr+'_'+chain;
-  try{ const r=await jget(`${CHAINS[chain].host}/api/v2/addresses/${addr}/nft?type=ERC-721%2CERC-1155`);
-    const items=(r.items||[]).map(n=>({
-      img:n.image_url||n.metadata?.image||null,
-      name:n.metadata?.name||((n.token?.name||'NFT')+' #'+(n.id||'')),
-      col:n.token?.name||'Unknown collection'}));
-    cache[key]=cache[key]||{native:0,tokens:[]}; cache[key].nfts=items; return items;
-  }catch(e){ return []; }
-}
-async function fetchPrices(){
-  const ids=new Set(S.manual.map(m=>m.id));
-  Object.values(CHAINS).forEach(c=>ids.add(c.cg));
-  ids.add('qanplatform'); // news-tab ticker
-  if(S.wallets.some(w=>w.chains.includes('bnb'))) BSC_TOKENS.forEach(t=>ids.add(t.cg));
-  if(!ids.size) return;
-  try{ const r=await jget(`https://api.coingecko.com/api/v3/simple/price?ids=${[...ids].join(',')}&vs_currencies=usd,eur&include_24hr_change=true`);
-    for(const[k,v]of Object.entries(r)){ prices[k]={usd:v.usd, chg:v.usd_24h_change||0};
-      if(v.usd&&v.eur) eurRate=v.eur/v.usd; }
-  }catch(e){ toast('Price feed busy — retry soon'); }
-  const custom=(S.custom||[]).map(t=>t.contract.toLowerCase());
-  if(custom.length){ try{
-    const r=await jget(`https://api.coingecko.com/api/v3/simple/token_price/binance-smart-chain?contract_addresses=${custom.join(',')}&vs_currencies=usd&include_24hr_change=true`);
-    for(const[k,v]of Object.entries(r)) prices['c_'+k.toLowerCase()]={usd:v.usd, chg:v.usd_24h_change||0};
-  }catch(e){} }
-}
-async function refreshAll(){
-  if(loading) return; loading=true;
-  $('refreshBtn').classList.add('spin');
-  await fetchPrices();
-  await Promise.all(S.wallets.flatMap(w=>w.chains.map(c=>fetchWalletChain(w.addr,c).catch(()=>{}))));
-  S.refreshes++; addXP(10);
-  const t=totals(); if(t.total>S.ath){S.ath=t.total;} save();
-  checkAchv(t);
-  fetchQanxRank(); // async; re-renders when done
-  await fetchChart();
-  loading=false; $('refreshBtn').classList.remove('spin');
-  render(); }
+const CHAIN_META = {
+  btc: { symbol: 'BTC', id: 'bitcoin', label: 'BTC' },
+  eth: { symbol: 'ETH', id: 'ethereum', label: 'ETH' },
+  sol: { symbol: 'SOL', id: 'solana', label: 'SOL' },
+  rhc: { symbol: 'ETH', id: 'ethereum', label: 'RHC · ETH' }
+};
 
-/* ============ portfolio math ============ */
-function holdings(){
-  const rows=[];
-  for(const m of S.manual){ const p=prices[m.id]||{};
-    rows.push({key:'m'+m.id, sym:m.sym.toUpperCase(), name:m.name, amt:m.amt,
-      usd:p.usd?m.amt*p.usd:0, chg:p.chg??null, icon:m.icon, src:'Manual bag', manualId:m.id, cg:m.id}); }
-  for(const w of S.wallets) for(const c of w.chains){ const d=cache[w.addr+'_'+c]; if(!d) continue;
-    const np=prices[CHAINS[c].cg]||{};
-    if(d.native>1e-6) rows.push({key:w.addr+c+'native', sym:CHAINS[c].sym, name:CHAINS[c].name+' '+CHAINS[c].sym,
-      amt:d.native, usd:d.nativeUsd??(np.usd?d.native*np.usd:0), chg:np.chg??null, icon:null, src:w.name, cg:CHAINS[c].cg});
-    for(const t of d.tokens) rows.push({key:w.addr+c+t.sym, sym:t.sym, name:t.name, amt:t.amt, usd:t.usd, chg:t.chg??null, icon:t.icon, src:w.name+' · '+CHAINS[c].name, cg:t.cg??null}); }
-  return rows.sort((a,b)=>b.usd-a.usd);
-}
-/* merge same coin across wallets & bags: one BTC row, one ETH row, … */
-function aggHoldings(h){
-  const map=new Map();
-  for(const x of h){ const k=x.sym;
-    if(!map.has(k)) map.set(k,{...x, srcs:new Set([x.src])});
-    else{ const a=map.get(k); a.amt+=x.amt; a.usd+=x.usd; a.srcs.add(x.src);
-      if(a.chg==null)a.chg=x.chg; if(!a.icon)a.icon=x.icon; if(!a.cg)a.cg=x.cg; } }
-  return [...map.values()].map(x=>({...x, src:x.srcs.size>1?x.srcs.size+' sources':[...x.srcs][0]}))
-    .sort((a,b)=>b.usd-a.usd);
-}
-function totals(){
-  const h=holdings(); const total=h.reduce((s,x)=>s+x.usd,0);
-  let wsum=0, wtot=0; h.forEach(x=>{ if(x.chg!=null&&x.usd>0){wsum+=x.chg*x.usd; wtot+=x.usd;} });
-  return {total, chg: wtot?wsum/wtot:null, h};
-}
-function rank(t){ let r=RANKS[0]; for(const x of RANKS) if(t>=x[0]) r=x; return r; }
+// Common symbol -> CoinGecko id map for fast/reliable lookups.
+const KNOWN_IDS = {
+  BTC: 'bitcoin', ETH: 'ethereum', SOL: 'solana', BNB: 'binancecoin',
+  XRP: 'ripple', ADA: 'cardano', DOGE: 'dogecoin', TRX: 'tron',
+  TON: 'the-open-network', AVAX: 'avalanche-2', DOT: 'polkadot',
+  MATIC: 'matic-network', POL: 'polygon-ecosystem-token', LINK: 'chainlink',
+  LTC: 'litecoin', SHIB: 'shiba-inu', UNI: 'uniswap', ATOM: 'cosmos',
+  XLM: 'stellar', NEAR: 'near', APT: 'aptos', ARB: 'arbitrum',
+  OP: 'optimism', SUI: 'sui', PEPE: 'pepe', USDT: 'tether',
+  USDC: 'usd-coin', DAI: 'dai', BCH: 'bitcoin-cash', ETC: 'ethereum-classic',
+  FIL: 'filecoin', ICP: 'internet-computer', HBAR: 'hedera-hashgraph',
+  INJ: 'injective-protocol', RENDER: 'render-token', TIA: 'celestia',
+  WLD: 'worldcoin-wld', SEI: 'sei-network', PYTH: 'pyth-network'
+};
 
-/* ============ QANX holder leaderboard rank ============ */
-const QANX_ETH='0xAAA9214F675316182Eaa21C85f0Ca99160CC3AAA';
-const ETH_RPC='https://ethereum-rpc.publicnode.com';
-let qrank={ts:0, rank:null, combined:null, holders:0, holdersC:0, ratio:0, lastSpot:0, cap:300, busy:false, tried:false};
-function qanxTotal(){ return holdings().filter(x=>x.sym==='QANX').reduce((s,x)=>s+x.amt,0); }
-async function fetchQanxRank(){
-  const qamt=qanxTotal(); if(qamt<=0){ qrank.rank=null; qrank.combined=null; return; }
-  if(qrank.busy||Date.now()-qrank.ts<18e5) return; // re-scan at most every 30 min
-  qrank.busy=true;
-  try{
-    const base='https://eth.blockscout.com/api/v2/tokens/'+QANX_ETH;
-    try{ const c=await jget(base+'/counters'); qrank.holders=Number(c.token_holders_count)||0; }catch(e){}
-    // live walk of the Ethereum top-300 holder list
-    let rank=null, count=0, np=null, last=0, page=0;
-    while(page<Math.ceil(qrank.cap/50)){
-      const r=await jget(base+'/holders'+(np?'?'+new URLSearchParams(np).toString():''));
-      const items=r.items||[]; if(!items.length) break;
-      for(const it of items){ count++;
-        last=Number(it.value)/1e18;
-        if(rank==null&&qamt>=last){ rank=count; break; } }
-      if(rank!=null) break;
-      np=r.next_page_params; if(!np) break; page++;
-    }
-    // BNB side: no keyless holder list exists, so weight by on-chain supply split
-    try{
-      const TS='0x18160ddd'; // totalSupply()
-      const [se,sb]=await Promise.all([
-        rpc(ETH_RPC,'eth_call',[{to:QANX_ETH,data:TS},'latest']),
-        rpc(CHAINS.bnb.rpc,'eth_call',[{to:QANX_ETH,data:TS},'latest'])]);
-      const supE=parseInt(se,16)/1e18, supB=parseInt(sb,16)/1e18;
-      if(supE>0&&supB>0) qrank.ratio=supB/supE;
-    }catch(e){}
-    qrank.combined = rank!=null&&qrank.ratio ? Math.round(rank*(1+qrank.ratio)) : rank;
-    qrank.holdersC = qrank.holders ? Math.round(qrank.holders*(1+(qrank.ratio||0))) : 0;
-    qrank.rank=rank; qrank.lastSpot=last; qrank.ts=Date.now(); qrank.tried=true;
-  }catch(e){ qrank.tried=true; }
-  qrank.busy=false;
-  checkAchv(totals()); // rank-based achievements
-  if(tab==='home') render();
-}
-function qrankPanelHTML(ag){
-  const q=ag.find(x=>x.sym==='QANX'); if(!q||q.amt<=0) return '';
-  const capC=qrank.ratio?Math.round(qrank.cap*(1+qrank.ratio)):qrank.cap;
-  const inner=
-    qrank.busy&&!qrank.rank?`<div class="rsub skel">${'Scanning the holder lists…'}</div>`:
-    qrank.rank?`<div style="display:flex;align-items:center;gap:14px">${icon('gemstone',32)}<div>
-        <div class="px" style="font-size:13px;color:var(--gld)">RANK ~#${fmt(qrank.combined||qrank.rank,0)}</div>
-        <div class="rsub" style="margin-top:5px">ETH+BNB combined${qrank.holdersC?' · of ≈'+fmt(qrank.holdersC,0)+' holders':''}</div>
-        <div class="rsub">#${fmt(qrank.rank,0)} on the Ethereum list (live)${qrank.ratio?' · BNB est. via supply split':''}</div>
-      </div></div>`:
-    qrank.tried?`<div style="display:flex;align-items:center;gap:14px">${icon('shrimp',30)}<div>
-        <div class="px" style="font-size:10px;color:var(--txt2)">OUTSIDE TOP ~${fmt(capC,0)}</div>
-        <div class="rsub" style="margin-top:5px">ETH+BNB combined${qrank.holdersC?' · of ≈'+fmt(qrank.holdersC,0)+' holders':''}${qrank.lastSpot?' · last ETH top-'+qrank.cap+' spot: '+fmt(qrank.lastSpot,0)+' QANX':''}</div>
-      </div></div>`:
-    `<div class="rsub skel">Scanning the holder lists…</div>`;
-  return `<div class="panel" style="margin-top:22px"><div class="ptitle m">QANX leaderboard</div>
-    ${inner}
-    <div class="rsub" style="margin-top:9px">Your stack: ${fmt(q.amt)} QANX (ETH + BNB combined)</div></div>`;
-}
-
-/* ============ live portfolio chart (1D/1W/1M/1Y) ============ */
-const TFS={'1d':{label:'1D',days:1},'7d':{label:'1W',days:7},'30d':{label:'1M',days:30},'365d':{label:'1Y',days:365}};
-let chart={tf:'7d', cache:{}, busy:false};
-function chartAssets(){
-  const {h}=totals(); const byId=new Map(), idUsd=new Map(); let flat=0;
-  for(const x of h){ if(x.cg){ byId.set(x.cg,(byId.get(x.cg)||0)+x.amt); idUsd.set(x.cg,(idUsd.get(x.cg)||0)+x.usd); } else flat+=x.usd; }
-  return {byId, idUsd, flat, any:h.length>0};
-}
-async function fetchChart(force){
-  const tf=chart.tf, cached=chart.cache[tf];
-  if(!force&&cached&&Date.now()-cached.ts<6e5) return;
-  if(chart.busy) return; chart.busy=true;
-  try{
-    const {byId, idUsd, flat, any}=chartAssets();
-    if(!any||!byId.size) return;
-    let rows=[], extraFlat=flat;
-    if(tf==='7d'){
-      const r=await jget('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&sparkline=true&ids='+[...byId.keys()].join(','));
-      for(const it of r){ const sp=it.sparkline_in_7d&&it.sparkline_in_7d.price;
-        if(sp&&sp.length>2) rows.push({amt:byId.get(it.id), sp}); }
-    }else{
-      // one call per coin: keep it polite — top 6 coins by value, rest as flat baseline
-      const top=[...byId.keys()].sort((a,b)=>(idUsd.get(b)||0)-(idUsd.get(a)||0));
-      const ids=top.slice(0,6);
-      extraFlat+=top.slice(6).reduce((s,id)=>s+(idUsd.get(id)||0),0);
-      const rs=await Promise.all(ids.map(async id=>{
-        try{ const r=await jget(`https://api.coingecko.com/api/v3/coins/${id}/market_chart?vs_currency=usd&days=${TFS[tf].days}`);
-          return {amt:byId.get(id), sp:(r.prices||[]).map(p=>p[1])}; }catch(e){ return null; } }));
-      rows=rs.filter(r=>r&&r.sp.length>2);
-      if(!rows.length) throw new Error('no data');
-    }
-    if(!rows.length) return;
-    const N=140, s=[];
-    for(let i=0;i<N;i++){ let v=extraFlat;
-      for(const row of rows) v+=row.amt*row.sp[Math.round(i*(row.sp.length-1)/(N-1))];
-      s.push(v); }
-    chart.cache[tf]={ts:Date.now(), series:s, chg:s[0]?(s[N-1]-s[0])/s[0]*100:0};
-  }catch(e){ if(!chart.cache[tf]) chart.cache[tf]={ts:Date.now()-5.4e5, series:null, chg:0}; }
-  finally{ chart.busy=false; }
-}
-function setTF(tf){ chart.tf=tf; render();
-  fetchChart().then(()=>{ if(tab==='home') render(); }); }
-function drawChart(){
-  const cv=document.getElementById('chart'); const c=chart.cache[chart.tf];
-  if(!cv||!c||!c.series) return;
-  const ctx=cv.getContext('2d'); if(!ctx) return;
-  const dpr=(window.devicePixelRatio||1), W=cv.clientWidth||440, H=110;
-  cv.width=W*dpr; cv.height=H*dpr; ctx.scale(dpr,dpr);
-  const s=c.series;
-  ctx.clearRect(0,0,W,H);
-  const min=Math.min(...s), max=Math.max(...s), span=(max-min)||1;
-  ctx.strokeStyle='rgba(51,42,107,.55)'; ctx.lineWidth=1;
-  for(let g=0;g<=4;g++){ ctx.beginPath(); ctx.moveTo(0,g*(H-2)/4+1); ctx.lineTo(W,g*(H-2)/4+1); ctx.stroke(); }
-  const up=s[s.length-1]>=s[0], col=up?'#3bff6f':'#ff4f5e';
-  const pts=s.map((v,i)=>[i*W/(s.length-1), H-8-((v-min)/span)*(H-18)]);
-  const curve=()=>{ ctx.beginPath(); ctx.moveTo(pts[0][0],pts[0][1]);
-    for(let i=1;i<pts.length-1;i++){ const xc=(pts[i][0]+pts[i+1][0])/2, yc=(pts[i][1]+pts[i+1][1])/2;
-      ctx.quadraticCurveTo(pts[i][0],pts[i][1],xc,yc); }
-    ctx.lineTo(pts[pts.length-1][0],pts[pts.length-1][1]); };
-  // area fill
-  curve(); ctx.lineTo(W,H); ctx.lineTo(0,H); ctx.closePath();
-  const grad=ctx.createLinearGradient(0,0,0,H);
-  grad.addColorStop(0, up?'rgba(59,255,111,.28)':'rgba(255,79,94,.28)');
-  grad.addColorStop(1,'rgba(0,0,0,0)');
-  ctx.fillStyle=grad; ctx.fill();
-  // glowing line
-  curve();
-  ctx.lineJoin='round'; ctx.lineCap='round';
-  ctx.shadowColor=col; ctx.shadowBlur=10;
-  ctx.strokeStyle=col; ctx.lineWidth=2.5; ctx.stroke();
-  ctx.shadowBlur=0;
-  // endpoint dot
-  const[ex,ey]=pts[pts.length-1];
-  ctx.beginPath(); ctx.arc(ex-1,ey,3.5,0,7); ctx.fillStyle='#fff'; ctx.fill();
-  ctx.beginPath(); ctx.arc(ex-1,ey,6,0,7); ctx.strokeStyle=col; ctx.lineWidth=1.5; ctx.stroke();
-}
-
-/* ============ achievements ============ */
-const ACHV=[
- {id:'bag',    ic:'moneybag', n:'Bag Secured',     d:'Add your first asset',              c:x=>x.h.length>=1},
- {id:'radar',  ic:'radar',    n:'On the Radar',    d:'Track your first wallet',           c:x=>S.wallets.length>=1},
- {id:'hopper', ic:'gamepad',  n:'Chain Hopper',    d:'Track 2+ different chains',         c:x=>new Set(S.wallets.flatMap(w=>w.chains)).size>=2},
- {id:'tower',  ic:'frame',    n:'Watchtower',      d:'Track 3 wallets at once',           c:x=>S.wallets.length>=3},
- {id:'collect',ic:'chest',    n:'Collector',       d:'Hold 5+ assets in inventory',       c:x=>x.h.length>=5},
- {id:'hoard',  ic:'chest',    n:'Dragon Hoard',    d:'Hold 10+ assets in inventory',      c:x=>x.h.length>=10},
- {id:'wizard', ic:'potion',   n:'Contract Wizard', d:'Add a custom BEP-20 by contract',   c:x=>(S.custom||[]).length>=1},
- {id:'qanx',   ic:'gemstone', n:'Quantum Degen',   d:'Hold some QANX',                    c:x=>x.h.some(a=>a.sym==='QANX')},
- {id:'crab',   ic:'crab',     n:'Crab Rave',       d:'Reach Crab tier ($1K)',             c:x=>x.total>=1e3},
- {id:'fish',   ic:'fish',     n:'Something Fishy', d:'Reach Fish tier ($10K)',            c:x=>x.total>=1e4},
- {id:'dolphin',ic:'dolphin',  n:'Flipper Mode',    d:'Reach Dolphin tier ($100K)',        c:x=>x.total>=1e5},
- {id:'whale',  ic:'whale',    n:'Thar She Blows',  d:'Reach Whale tier ($1M)',            c:x=>x.total>=1e6},
- {id:'pump',   ic:'rocket',   n:'To The Moon',     d:'Catch a +5% day',                   c:x=>x.chg!=null&&x.chg>=5},
- {id:'hands',  ic:'heart',    n:'Diamond Hands',   d:'Check your deck on a -5% day',      c:x=>x.chg!=null&&x.chg<=-5},
- {id:'pizza',  ic:'pizza',    n:'Pizza Party',     d:'Pizza index over 100',              c:x=>x.total/18>=100},
- {id:'week',   ic:'flame',    n:'Weekly Grind',    d:'7 days on the grind',               c:x=>x.days>=7},
- {id:'moon',   ic:'star',     n:'Moon Cycle',      d:'30 days on the grind',              c:x=>x.days>=30},
- {id:'lv5',    ic:'sword',    n:'Grinder',         d:'Reach level 5',                     c:x=>S.level>=5},
- {id:'lv10',   ic:'trophy',   n:'Final Boss',      d:'Reach level 10',                    c:x=>S.level>=10},
- {id:'nft',    ic:'frame',    n:'Trophy Hunter',   d:'Have an NFT in a tracked wallet',   c:x=>x.nfts>=1},
- {id:'q300',   ic:'gemstone', n:'Board Breaker',   d:'Crack the QANX top 300 holders',    c:x=>qrank.combined!=null&&qrank.combined<=300},
- {id:'q100',   ic:'trophy',   n:'Century Club',    d:'Crack the QANX top 100 holders',    c:x=>qrank.combined!=null&&qrank.combined<=100},
- {id:'q50',    ic:'star',     n:'Inner Circle',    d:'Crack the QANX top 50 holders',     c:x=>qrank.combined!=null&&qrank.combined<=50},
- {id:'q10',    ic:'whale',    n:'Quantum Whale',   d:'Crack the QANX top 10 holders',     c:x=>qrank.combined!=null&&qrank.combined<=10}
-];
-function checkAchv(t){
-  S.achv=S.achv||{};
-  const days=Math.max(1,Math.ceil((Date.now()-S.firstOpen)/864e5));
-  let nfts=0; for(const k in cache) nfts+=(cache[k].nfts||[]).length;
-  const ctx={...t, days, nfts};
-  const newly=[];
-  for(const a of ACHV){ try{ if(!S.achv[a.id]&&a.c(ctx)){ S.achv[a.id]=Date.now(); newly.push(a); } }catch(e){} }
-  if(newly.length){ save(); addXP(30*newly.length);
-    toast('Achievement: '+newly[0].n+(newly.length>1?' +'+(newly.length-1)+' more':'')+' (+'+30*newly.length+' XP)'); }
-}
-
-/* ============ render ============ */
-function go(t){ tab=t; document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===t)); render();
-  if(t==='nfts') loadAllNFTs(); if(t==='news') loadNews(); }
-
-/* ============ news feed (quantum + QAN/QANX) ============ */
-let newsD={ts:0, q:[], x:[], busy:false};
-function timeAgo(d){ const m=Math.max(1,Math.round((Date.now()-d)/6e4));
-  if(m<60) return m+'m ago'; const h=Math.round(m/60); if(h<24) return h+'h ago';
-  const days=Math.round(h/24); return days<30?days+'d ago':Math.round(days/30)+'mo ago'; }
-async function loadNews(){
-  if(newsD.busy||Date.now()-newsD.ts<6e5) return;
-  newsD.busy=true; if(tab==='news') render();
-  const q=[], x=[];
-  try{ const r=await jget('https://hn.algolia.com/api/v1/search_by_date?query=%22quantum%20computing%22&tags=story&hitsPerPage=10');
-    q.push(...(r.hits||[]).filter(h=>h.title).map(h=>({t:h.title,
-      u:h.url||('https://news.ycombinator.com/item?id='+h.objectID), s:'Hacker News',
-      d:new Date(h.created_at).getTime(), p:h.points||0}))); }catch(e){}
-  try{ const r=await jget('https://www.reddit.com/r/QuantumComputing/hot.json?limit=10&raw_json=1');
-    q.push(...(r.data.children||[]).map(c=>({t:c.data.title, u:'https://reddit.com'+c.data.permalink,
-      s:'r/QuantumComputing', d:c.data.created_utc*1000, p:c.data.ups||0}))); }catch(e){}
-  try{ const r=await jget('https://www.reddit.com/search.json?q=QANplatform%20OR%20QANX%20OR%20%22QAN%20platform%22&sort=new&limit=12&raw_json=1');
-    x.push(...(r.data.children||[]).map(c=>({t:c.data.title, u:'https://reddit.com'+c.data.permalink,
-      s:'r/'+c.data.subreddit, d:c.data.created_utc*1000, p:c.data.ups||0}))); }catch(e){}
-  q.sort((a,b)=>b.d-a.d); x.sort((a,b)=>b.d-a.d);
-  if(q.length) newsD.q=q.slice(0,10);
-  if(x.length) newsD.x=x.slice(0,8);
-  newsD.ts=Date.now(); newsD.busy=false;
-  if(tab==='news') render();
-}
-function newsItemsHTML(items){
-  return items.map(n=>`<a class="nitem" href="${esc(n.u)}" target="_blank" rel="noopener">
-    <div class="ntitle">${esc(n.t)}</div>
-    <div class="nmeta">${esc(n.s)} · ${timeAgo(n.d)}${n.p?' · ▲'+fmt(n.p,0):''}</div></a>`).join('');
-}
-function newsHTML(){
-  const qp=prices['qanplatform'];
-  const ticker=qp?`<div class="panel hi" style="margin-top:12px"><div class="ptitle g">QANX ticker</div>
-    <div style="display:flex;align-items:baseline;gap:12px">
-      <span style="font-family:'Press Start 2P',monospace;font-size:15px">$${fmt(qp.usd,qp.usd<1?4:2)}</span>
-      ${eurRate?`<span class="nmeta">≈ ${eur(qp.usd*eurRate)}</span>`:''}
-      <span class="${qp.chg>=0?'up':'down'}" style="font-size:18px">${qp.chg>=0?'▲':'▼'} ${fmt(Math.abs(qp.chg),2)}% 24h</span>
-    </div></div>`:'';
-  const loading=`<div class="empty skel">${icon('radar',40)}<br>Scanning the wires…</div>`;
-  const none=`<div class="empty">${icon('ghost',40)}<br>Nothing on the wire right now.<br>Feeds can be rate-limited — try again in a minute.</div>`;
-  return `${ticker}
-    <h3 class="sec">Quantum computing</h3>
-    <div class="panel">${newsD.busy&&!newsD.q.length?loading:(newsD.q.length?newsItemsHTML(newsD.q):none)}</div>
-    <h3 class="sec">QAN · QANX chatter</h3>
-    <div class="panel">${newsD.busy&&!newsD.x.length?loading:(newsD.x.length?newsItemsHTML(newsD.x):none)}</div>
-    <p class="note">Live from Hacker News &amp; Reddit public APIs — keyless, nothing sent about you.</p>`;
-}
-function coinIconHTML(x){ return x.icon?`<img src="${esc(x.icon)}" onerror="this.remove()">`:esc((x.sym||'?')[0]); }
-function render(){
-  const v=$('view'); const {total,chg,h}=totals();
-  if(tab==='home') v.innerHTML=homeHTML(total,chg,h);
-  else if(tab==='wallets') v.innerHTML=walletsHTML();
-  else if(tab==='nfts') v.innerHTML=nftsHTML();
-  else if(tab==='news') v.innerHTML=newsHTML();
-  else v.innerHTML=statsHTML(total,chg,h);
-}
-function homeHTML(total,chg,h){
-  const ag=aggHoldings(h);
-  const r=rank(total), xpIn=S.xp-60*(S.level-1)**2, xpNeed=60*S.level**2-60*(S.level-1)**2;
-  const dTot=dUsd(total,chg);
-  const chgTxt=chg==null?'':`<div class="chg ${chg>=0?'up':'down'}">${chg>=0?'▲':'▼'} ${fmt(Math.abs(chg),2)}%${dTot!=null?' · '+signUsd(dTot):''} today</div>`;
-  const cc=chart.cache[chart.tf];
-  const tfChips=`<div class="chips" style="margin-bottom:10px">${Object.entries(TFS).map(([k,v])=>
-    `<span class="chip ${chart.tf===k?'on':''}" onclick="setTF('${k}')">${v.label}</span>`).join('')}</div>`;
-  const chartPanel=h.length?`<div class="panel" style="margin-top:22px"><div class="ptitle c">Portfolio value</div>
-    ${tfChips}
-    ${cc&&cc.series?`<div style="display:flex;justify-content:space-between;font-size:16px;color:var(--txt2);margin-bottom:8px">
-      <span>LO ${usd(Math.min(...cc.series))}</span>
-      <span class="${cc.chg>=0?'up':'down'}">${cc.chg>=0?'+':''}${fmt(cc.chg,2)}% (${signUsd(cc.series[cc.series.length-1]-cc.series[0])}) ${TFS[chart.tf].label}</span>
-      <span>HI ${usd(Math.max(...cc.series))}</span></div>
-    <canvas id="chart" style="width:100%;height:110px;display:block"></canvas>`
-    :`<div class="rsub skel" style="padding:26px 0;text-align:center">${cc?'Chart feed busy — tap a timeframe to retry':'Loading chart…'}</div>`}
-  </div>`:'';
-  let split='';
-  if(ag.length){
-    const colors=['#a06bff','#39d6ff','#ff4fd8','#ffd23b','#3bff6f','#4f74ff'];
-    let segs='', leg='';
-    const top5=ag.slice(0,5); const other=total-top5.reduce((s,x)=>s+x.usd,0);
-    const parts=[...top5.map((x,i)=>({n:x.sym,v:x.usd,c:colors[i]})), ...(other>0.01?[{n:'OTHER',v:other,c:'#3a3468'}]:[])];
-    for(const p of parts){ const pct=total?p.v/total*100:0;
-      segs+=`<div style="width:${pct}%;background:${p.c}"></div>`;
-      leg+=`<div class="li"><span class="dot" style="background:${p.c}"></span>${esc(p.n)} — ${fmt(pct,1)}%</div>`; }
-    split=`<div class="panel" style="margin-top:22px"><div class="ptitle c">Loot split</div>
-      <div class="splitbar">${segs}</div><div class="legend">${leg}</div></div>`;
+async function loadHoldings() {
+  try {
+    const result = await window.storage.get(STORAGE_KEY, false);
+    holdings = result ? JSON.parse(result.value) : [];
+  } catch (e) {
+    holdings = [];
   }
-  const list=ag.length?ag.map(x=>`<div class="row">
-      <div class="coinicon">${coinIconHTML(x)}</div>
-      <div class="rmain"><div class="rname">${esc(x.sym)}</div><div class="rsub">${fmt(x.amt)} · ${esc(x.src)}</div></div>
-      <div class="rright"><div class="rval">${usd(x.usd)}</div>${x.chg!=null?`<div class="rchg ${x.chg>=0?'up':'down'}">${x.chg>=0?'+':''}${fmt(x.chg,2)}% (${signUsd(dUsd(x.usd,x.chg))})</div>`:''}</div>
-    </div>`).join('')
-    :`<div class="empty">${icon('chest',52)}<br>Your inventory is empty.<br>Track a wallet or stash a bag to begin the run.</div>`;
-  return `
-  <div class="panel hi" style="margin-top:12px"><div class="ptitle g">Player stats</div>
-    <div class="lbl">Total portfolio</div>
-    <div class="total">${usd(total)}<span style="font-family:'VT323',monospace;font-size:18px;color:var(--txt2);text-shadow:none;margin-left:10px">${eurRate?'≈ '+eur(total*eurRate):''}</span></div>
-    ${chgTxt}
-    <div class="rankrow">
-      <span class="badge gold">${icon(r[1],18)} ${r[2]} tier</span>
-      <span class="badge">${icon('sword',14)} LV.${S.level}</span>
-      <span class="badge">${icon('flame',14)} Day ${Math.max(1,Math.ceil((Date.now()-S.firstOpen)/864e5))}</span>
-    </div>
-    <div class="xpwrap"><div class="bar"><div class="fill" style="width:${Math.min(100,xpIn/xpNeed*100)}%"></div></div>
-    <div class="xptxt"><span>XP ${fmt(xpIn,0)}/${fmt(xpNeed,0)}</span><span>NEXT: LV.${S.level+1}</span></div></div>
-  </div>
-  ${chartPanel}
-  ${qrankPanelHTML(ag)}
-  <div style="display:flex;gap:9px">
-    <button class="btn sm" onclick="openWalletModal()">${icon('wallet',16)} Track wallet</button>
-    <button class="btn sm mag" onclick="openCoinModal()">${icon('coin',16)} Add coin</button>
-  </div>
-  <div class="panel" style="margin-top:22px"><div class="ptitle">Inventory</div>${list}</div>
-  ${split}
-  <div class="privacy">${icon('lock',15)} 100% local — data lives only on this device</div>`;
+  try {
+    const walletResult = await window.storage.get(WALLET_KEY, false);
+    wallets = walletResult ? JSON.parse(walletResult.value) : [];
+  } catch (e) {
+    wallets = [];
+  }
+  render();
 }
-function walletsHTML(){
-  const cards=S.wallets.map((w,i)=>{
-    let tot=0, rows='';
-    for(const c of w.chains){ const d=cache[w.addr+'_'+c]; if(!d) continue;
-      const np=prices[CHAINS[c].cg]||{}; const nUsd=d.nativeUsd??(np.usd?d.native*np.usd:0);
-      tot+=nUsd+d.tokens.reduce((s,t)=>s+t.usd,0);
-      if(d.native>1e-6||d.tokens.length) rows+=`<div class="rsub" style="margin-top:8px">${gem(CHAINS[c].color,11)} ${CHAINS[c].name}: ${fmt(d.native,4)} ${CHAINS[c].sym}${d.tokens.length?' + '+d.tokens.length+' tokens':''}</div>`; }
-    const seed=parseInt(w.addr.slice(2,10),16);
-    return `<div class="panel"><div class="ptitle c">${esc(w.name)}</div>
-      <div class="wallet-head">
-        <canvas class="wava" width="8" height="8" data-seed="${seed}"></canvas>
-        <div class="rmain"><div class="rsub">${short(w.addr)}</div><div class="rsub">${w.chains.map(c=>gem(CHAINS[c].color,10)).join(' ')}</div></div>
-        <div class="rright"><div class="rval">${usd(tot)}</div></div>
-        <button class="del" onclick="delWallet(${i})">${icon('close',14)}</button>
-      </div>${rows}</div>`;
-  }).join('');
-  return `<h3 class="sec">Tracked wallets</h3>
-    ${cards||`<div class="panel empty">${icon('radar',48)}<br>No wallets tracked yet.<br>Paste any public address — read-only, keys never involved.</div>`}
-    <button class="btn" onclick="openWalletModal()">${icon('wallet',16)} Track a wallet</button>
-    <h3 class="sec">Manual bags</h3>
-    ${S.manual.length?`<div class="panel">`+S.manual.map((m,i)=>`<div class="row">
-      <div class="coinicon">${coinIconHTML(m)}</div>
-      <div class="rmain"><div class="rname">${esc(m.sym.toUpperCase())}</div><div class="rsub">${fmt(m.amt)} ${esc(m.sym.toUpperCase())}</div></div>
-      <div class="rright"><div class="rval">${prices[m.id]?usd(m.amt*prices[m.id].usd):'…'}</div></div>
-      <button class="del" onclick="delManual(${i})">${icon('close',14)}</button></div>`).join('')+`</div>`:''}
-    <button class="btn ghost" onclick="openCoinModal()">${icon('plus',14)} Add coin manually</button>
-    <h3 class="sec">BNB Chain tokens</h3>
-    <div class="panel"><div class="ptitle g">BEP-20 watchlist</div>
-      <div class="rsub" style="margin-bottom:8px">Auto-checked on BNB wallets: ${BSC_TOKENS.map(t=>esc(t.sym)).join(' · ')}</div>
-      ${(S.custom||[]).map((t,i)=>`<div class="row">
-        <div class="coinicon">${esc(t.sym[0])}</div>
-        <div class="rmain"><div class="rname">${esc(t.sym)}</div><div class="rsub">${short(t.contract)}</div></div>
-        <button class="del" onclick="delToken(${i})">${icon('close',14)}</button></div>`).join('')}
-    </div>
-    <button class="btn ghost" onclick="openTokModal()">${icon('potion',14)} Add BEP-20 by contract</button>`;
-}
-function nftsHTML(){
-  const all=[];
-  for(const w of S.wallets) for(const c of w.chains){ const d=cache[w.addr+'_'+c];
-    if(d?.nfts) for(const n of d.nfts) all.push(n); }
-  if(!S.wallets.length) return `<div class="panel empty" style="margin-top:16px">${icon('frame',48)}<br>Track a wallet first —<br>its NFTs show up here as your trophy hall.</div>`;
-  if(nftLoading) return `<div class="panel empty skel" style="margin-top:16px">${icon('potion',48)}<br>Summoning your collection…</div>`;
-  if(!all.length) return `<div class="panel empty" style="margin-top:16px">${icon('ghost',48)}<br>No NFTs found in tracked wallets (yet).</div>`;
-  return `<h3 class="sec">Trophy hall · ${all.length} items</h3><div class="nftgrid">`+
-    all.slice(0,60).map(n=>`<div class="nft">${n.img?`<img loading="lazy" src="${esc(n.img)}" onerror="this.outerHTML='<div class=ph>${icon('frame',40).replace(/"/g,'&quot;')}</div>'">`:`<div class="ph">${icon('frame',40)}</div>`}
-      <div class="nfo"><b>${esc(n.name)}</b><span>${esc(n.col)}</span></div></div>`).join('')+`</div>`;
-}
-let nftLoading=false;
-async function loadAllNFTs(){
-  if(nftLoading||!S.wallets.length) return; nftLoading=true; render();
-  await Promise.all(S.wallets.flatMap(w=>w.chains.map(c=>fetchNFTs(w.addr,c))));
-  nftLoading=false; checkAchv(totals()); if(tab==='nfts') render();
-}
-function achvHTML(){
-  const got=S.achv||{}; const n=Object.keys(got).filter(k=>ACHV.some(a=>a.id===k)).length;
-  const fresh=Date.now()-864e5;
-  return `<h3 class="sec">Achievements · ${n}/${ACHV.length} unlocked</h3>`+
-    ACHV.map(a=>{ const u=got[a.id];
-      return `<div class="achv ${u?'unlocked':'lock2'}">${icon(u?a.ic:'lock',26)}
-        <div class="abody"><b>${esc(a.n)}</b><span>${esc(a.d)}</span></div>
-        ${u&&u>fresh?'<span class="anew blink">NEW</span>':''}</div>`; }).join('');
-}
-function statsHTML(total,chg,h){
-  if(!h.length) return `<div class="panel empty" style="margin-top:16px">${icon('chart',48)}<br>Stats unlock once your deck has assets.</div>`+achvHTML();
-  const ag=aggHoldings(h);
-  const hhi=ag.reduce((s,x)=>s+(total?(x.usd/total)**2:0),0);
-  const div=Math.round((1-hhi)*100);
-  const movers=ag.filter(x=>x.chg!=null);
-  const best=movers.length?movers.reduce((a,b)=>a.chg>b.chg?a:b):null;
-  const worst=movers.length?movers.reduce((a,b)=>a.chg<b.chg?a:b):null;
-  const big=ag[0];
-  const days=Math.max(1,Math.ceil((Date.now()-S.firstOpen)/864e5));
-  const pizzas=Math.floor(total/18);
-  const vibe=chg==null?{i:'zzz',t:'SIDEWAYS'}:chg>5?{i:'rocket',t:'GIGA PUMP'}:chg>1?{i:'chart',t:'COMFY GREEN'}:chg>-1?{i:'crabv',t:'CRAB MARKET'}:chg>-5?{i:'drop',t:'MILD PAIN'}:{i:'skull',t:'MAX PAIN'};
-  const dver=div>70?'Diamond spread':div>40?'Decently spread':'All-in energy';
-  const r=rank(total);
-  return `<h3 class="sec">Quest log · fun stats</h3>
-  <div class="statgrid">
-    <div class="stat wide">${icon(vibe.i,26)}<div class="v">${vibe.t}</div><div class="k">Today's market vibe${chg!=null?` · ${chg>=0?'+':''}${fmt(chg,2)}%`:''}</div></div>
-    <div class="stat">${icon('potion',22)}<div class="v">${div}/100</div><div class="k">Diversity — ${dver}</div></div>
-    <div class="stat">${icon('moneybag',22)}<div class="v">${esc(big.sym)}</div><div class="k">Biggest bag · ${fmt(total?big.usd/total*100:0,1)}% of deck</div></div>
-    ${best?`<div class="stat">${icon('trophy',22)}<div class="v up">${esc(best.sym)} +${fmt(best.chg,1)}%</div><div class="k">MVP of the day</div></div>`:''}
-    ${worst&&worst!==best?`<div class="stat">${icon('ghost',22)}<div class="v down">${esc(worst.sym)} ${fmt(worst.chg,1)}%</div><div class="k">Rekt of the day</div></div>`:''}
-    <div class="stat">${icon('pizza',22)}<div class="v">${fmt(pizzas,0)}</div><div class="k">Pizza index — pizzas you could buy</div></div>
-    <div class="stat">${icon('mountain',22)}<div class="v">${usd(S.ath)}</div><div class="k">All-time high (since tracking)</div></div>
-    <div class="stat">${icon('flame',22)}<div class="v">${days}</div><div class="k">Days on the grind</div></div>
-    <div class="stat">${icon('radar',22)}<div class="v">${S.refreshes}</div><div class="k">Portfolio checks (+10 XP each)</div></div>
-    <div class="stat wide">${icon(r[1],26)}<div class="v">${r[2]} TIER</div><div class="k">${nextRankTxt(total)}</div></div>
-  </div>
-  ${achvHTML()}`;
-}
-function nextRankTxt(t){ for(const r of RANKS) if(t<r[0]) return usd(r[0]-t)+' until '+r[2]+' tier';
-  return 'Apex predator. The ocean is yours.'; }
 
-/* pixel identicon for wallets */
-function drawAvatars(){
-  document.querySelectorAll('canvas.wava').forEach(cv=>{
-    let s=Number(cv.dataset.seed)||1; const ctx=cv.getContext('2d');
-    const rnd=()=>{s=(s*1103515245+12345)&0x7fffffff;return s/0x7fffffff;};
-    const hue=Math.floor(rnd()*360);
-    ctx.fillStyle='#0e0b22';ctx.fillRect(0,0,8,8);
-    for(let y=0;y<8;y++)for(let x=0;x<4;x++){ if(rnd()>.5){
-      ctx.fillStyle=`hsl(${(hue+Math.floor(rnd()*3)*40)%360},85%,${55+Math.floor(rnd()*20)}%)`;
-      ctx.fillRect(x,y,1,1); ctx.fillRect(7-x,y,1,1);}}
+async function saveHoldings() {
+  try {
+    await window.storage.set(STORAGE_KEY, JSON.stringify(holdings), false);
+  } catch (e) {
+    console.error('Save failed', e);
+  }
+}
+
+async function saveWallets() {
+  try {
+    await window.storage.set(WALLET_KEY, JSON.stringify(wallets), false);
+  } catch (e) {
+    console.error('Save failed', e);
+  }
+}
+
+function fmtUSD(n) {
+  if (n === null || n === undefined || isNaN(n)) return { whole: '$0', cents: '.00' };
+  const parts = n.toFixed(2).split('.');
+  const whole = '$' + Number(parts[0]).toLocaleString('en-US');
+  return { whole, cents: '.' + parts[1] };
+}
+
+function fmtAmount(n) {
+  const num = parseFloat(n);
+  if (num >= 1000) return num.toLocaleString('en-US', { maximumFractionDigits: 2 });
+  if (num >= 1) return num.toLocaleString('en-US', { maximumFractionDigits: 4 });
+  return num.toString();
+}
+
+const ACHIEVEMENTS = [
+  { id: 'first-entry',   emoji: '🌱', title: 'First Entry',        desc: 'Add your first holding or wallet.',
+    check: ctx => ctx.assetCount >= 1 },
+  { id: 'diversifier',   emoji: '🎨', title: 'Diversifier',        desc: 'Hold 3 or more different assets.',
+    check: ctx => ctx.assetCount >= 3 },
+  { id: 'collector',     emoji: '🗂️', title: 'Collector',          desc: 'Hold 5 or more different assets.',
+    check: ctx => ctx.assetCount >= 5 },
+  { id: 'full-set',      emoji: '🏛️', title: 'The Full Set',       desc: 'Hold 10 or more different assets.',
+    check: ctx => ctx.assetCount >= 10 },
+  { id: 'og',            emoji: '🪙', title: 'Old School',         desc: 'Hold Bitcoin — the original.',
+    check: ctx => ctx.symbols.has('BTC') },
+  { id: 'blue-chip',     emoji: '💎', title: 'Blue Chip',          desc: 'Hold both BTC and ETH.',
+    check: ctx => ctx.symbols.has('BTC') && ctx.symbols.has('ETH') },
+  { id: 'meme-lord',     emoji: '🐸', title: 'Meme Lord',          desc: 'Hold a meme coin — DOGE, SHIB or PEPE.',
+    check: ctx => ['DOGE', 'SHIB', 'PEPE'].some(s => ctx.symbols.has(s)) },
+  { id: 'stablecoin',    emoji: '⚓', title: 'Steady Hand',        desc: 'Hold a stablecoin — USDT, USDC or DAI.',
+    check: ctx => ['USDT', 'USDC', 'DAI'].some(s => ctx.symbols.has(s)) },
+  { id: 'layer2',        emoji: '🧱', title: 'Layer 2 Explorer',   desc: 'Hold a layer-2 token — ARB, OP, MATIC or POL.',
+    check: ctx => ['ARB', 'OP', 'MATIC', 'POL'].some(s => ctx.symbols.has(s)) },
+  { id: 'defi',          emoji: '🌾', title: 'DeFi Native',        desc: 'Hold a DeFi token — UNI or LINK.',
+    check: ctx => ['UNI', 'LINK'].some(s => ctx.symbols.has(s)) },
+  { id: 'detective',     emoji: '🔎', title: 'On-Chain Detective', desc: 'Track a public wallet address.',
+    check: ctx => ctx.wallets.length >= 1 },
+  { id: 'multi-chain',   emoji: '🌐', title: 'Multi-Chain',        desc: 'Track wallets on 2 or more different chains.',
+    check: ctx => new Set(ctx.wallets.map(w => w.chain)).size >= 2 },
+  { id: 'first-hundred', emoji: '🌰', title: 'First Hundred',      desc: 'Portfolio value reaches $100.',
+    check: ctx => ctx.peak >= 100 },
+  { id: 'big-bag',       emoji: '💰', title: 'Big Bag',            desc: 'Portfolio value reaches $1,000.',
+    check: ctx => ctx.peak >= 1000 },
+  { id: 'whale',         emoji: '🐋', title: 'Whale Sighting',     desc: 'Portfolio value reaches $10,000.',
+    check: ctx => ctx.peak >= 10000 },
+  { id: 'six-figures',   emoji: '🏔️', title: 'Six Figures',        desc: 'Portfolio value reaches $100,000.',
+    check: ctx => ctx.peak >= 100000 },
+
+  // Portfolio size tiers, classic crypto-community creature scale.
+  { id: 'tier-shrimp',   emoji: '🦐', title: 'Shrimp',             desc: 'Portfolio value reaches $25.',
+    check: ctx => ctx.peak >= 25 },
+  { id: 'tier-crab',     emoji: '🦀', title: 'Crab',               desc: 'Portfolio value reaches $250.',
+    check: ctx => ctx.peak >= 250 },
+  { id: 'tier-fish',     emoji: '🐟', title: 'Fish',               desc: 'Portfolio value reaches $2,500.',
+    check: ctx => ctx.peak >= 2500 },
+  { id: 'tier-dolphin',  emoji: '🐬', title: 'Dolphin',            desc: 'Portfolio value reaches $25,000.',
+    check: ctx => ctx.peak >= 25000 },
+  { id: 'tier-shark',    emoji: '🦈', title: 'Shark',              desc: 'Portfolio value reaches $250,000.',
+    check: ctx => ctx.peak >= 250000 },
+  { id: 'tier-whale',    emoji: '🐋', title: 'Whale',              desc: 'Portfolio value reaches $2,500,000.',
+    check: ctx => ctx.peak >= 2500000 },
+  { id: 'tier-kraken',   emoji: '🐙', title: 'Kraken',             desc: 'Portfolio value reaches $25,000,000.',
+    check: ctx => ctx.peak >= 25000000 },
+
+  // QANX holder-rank tiers, best rank ever seen across ETH or BSC.
+  { id: 'qanx-1000',     emoji: '🥉', title: 'QANX Top 1000',      desc: 'Rank in the top 1000 QANX holders on ETH or BSC.',
+    check: ctx => ctx.qanxRank <= 1000 },
+  { id: 'qanx-300',      emoji: '🥈', title: 'QANX Top 300',       desc: 'Rank in the top 300 QANX holders on ETH or BSC.',
+    check: ctx => ctx.qanxRank <= 300 },
+  { id: 'qanx-200',      emoji: '🥇', title: 'QANX Top 200',       desc: 'Rank in the top 200 QANX holders on ETH or BSC.',
+    check: ctx => ctx.qanxRank <= 200 },
+  { id: 'qanx-100',      emoji: '🏅', title: 'QANX Top 100',       desc: 'Rank in the top 100 QANX holders on ETH or BSC.',
+    check: ctx => ctx.qanxRank <= 100 },
+  { id: 'qanx-50',       emoji: '🎖️', title: 'QANX Top 50',        desc: 'Rank in the top 50 QANX holders on ETH or BSC.',
+    check: ctx => ctx.qanxRank <= 50 },
+];
+
+async function loadAchievementState() {
+  try {
+    const r = await window.storage.get(ACHV_KEY, false);
+    unlockedAchievements = r ? new Set(JSON.parse(r.value)) : new Set();
+  } catch (e) {
+    unlockedAchievements = new Set();
+  }
+  try {
+    const r = await window.storage.get(PEAK_KEY, false);
+    peakTotal = r ? parseFloat(r.value) : 0;
+  } catch (e) {
+    peakTotal = 0;
+  }
+  try {
+    const r = await window.storage.get(QANX_RANK_KEY, false);
+    qanxBestRank = r ? parseFloat(r.value) : Infinity;
+  } catch (e) {
+    qanxBestRank = Infinity;
+  }
+}
+
+async function saveAchievementState() {
+  try {
+    await window.storage.set(ACHV_KEY, JSON.stringify([...unlockedAchievements]), false);
+  } catch (e) {
+    console.error('Save failed', e);
+  }
+}
+
+async function savePeakTotal() {
+  try {
+    await window.storage.set(PEAK_KEY, String(peakTotal), false);
+  } catch (e) {
+    console.error('Save failed', e);
+  }
+}
+
+async function saveQanxBestRank() {
+  try {
+    await window.storage.set(QANX_RANK_KEY, String(qanxBestRank), false);
+  } catch (e) {
+    console.error('Save failed', e);
+  }
+}
+
+function recordQanxRank(rank) {
+  if (typeof rank === 'number' && rank < qanxBestRank) {
+    qanxBestRank = rank;
+    saveQanxBestRank();
+    updateAndRenderAchievements(peakTotal);
+  }
+}
+
+function buildAchievementContext(total) {
+  const symbols = new Set();
+  holdings.forEach(h => symbols.add(h.symbol.toUpperCase()));
+  wallets.forEach(w => symbols.add(CHAIN_META[w.chain].symbol));
+
+  if (total > peakTotal) {
+    peakTotal = total;
+    savePeakTotal();
+  }
+
+  return { symbols, assetCount: symbols.size, wallets, peak: peakTotal, qanxRank: qanxBestRank };
+}
+
+function updateAndRenderAchievements(total) {
+  const ctx = buildAchievementContext(total);
+  const newlyUnlocked = [];
+
+  ACHIEVEMENTS.forEach(a => {
+    if (!unlockedAchievements.has(a.id) && a.check(ctx)) {
+      unlockedAchievements.add(a.id);
+      newlyUnlocked.push(a);
+    }
+  });
+
+  if (newlyUnlocked.length > 0) {
+    saveAchievementState();
+    showAchievementToast(newlyUnlocked[0]);
+  }
+
+  achvCount.textContent = `${unlockedAchievements.size}/${ACHIEVEMENTS.length}`;
+  achvGrid.innerHTML = '';
+
+  ACHIEVEMENTS.forEach(a => {
+    const isUnlocked = unlockedAchievements.has(a.id);
+    const isNew = newlyUnlocked.some(n => n.id === a.id);
+    const card = document.createElement('div');
+    card.className = 'achv-card ' + (isUnlocked ? 'unlocked' : 'locked') + (isNew ? ' new' : '');
+    card.innerHTML = `
+      <div class="achv-emoji">${a.emoji}</div>
+      <div class="achv-title">${a.title}</div>
+      <div class="achv-desc">${isUnlocked ? a.desc : '???'}</div>
+    `;
+    achvGrid.appendChild(card);
   });
 }
-const _render=render;
-render=function(){ _render(); drawAvatars(); drawChart(); };
 
-/* ============ modals / actions ============ */
-function openCoinModal(){ $('coinModal').classList.add('open'); $('coinSearch').value=''; $('coinResults').innerHTML=''; $('coinPick').style.display='none'; selCoin=null; }
-function openWalletModal(){ $('walletModal').classList.add('open'); selChains=['eth']; drawChips(); }
-function closeModals(){ document.querySelectorAll('.modal').forEach(m=>m.classList.remove('open')); }
-function drawChips(){ $('chainChips').innerHTML=Object.entries(CHAINS).map(([k,c])=>
-  `<span class="chip ${selChains.includes(k)?'on':''}" onclick="togChain('${k}')">${gem(c.color,10)} ${c.name}</span>`).join(''); }
-function togChain(k){ selChains.includes(k)?selChains=selChains.filter(x=>x!==k):selChains.push(k); if(!selChains.length)selChains=['eth']; drawChips(); }
+let achvToastTimer = null;
+function showAchievementToast(a) {
+  clearTimeout(achvToastTimer);
+  achvToast.textContent = `🏆 Achievement unlocked: ${a.title}`;
+  achvToast.classList.add('show');
+  achvToastTimer = setTimeout(() => achvToast.classList.remove('show'), 3200);
+}
 
-/* built-in list = instant results, zero API calls */
-const LOCAL_COINS=[
- ['bitcoin','btc','Bitcoin'],['ethereum','eth','Ethereum'],['binancecoin','bnb','BNB'],
- ['qanplatform','qanx','QANplatform'],['solana','sol','Solana'],['ripple','xrp','XRP'],
- ['cardano','ada','Cardano'],['dogecoin','doge','Dogecoin'],['tron','trx','TRON'],
- ['polkadot','dot','Polkadot'],['chainlink','link','Chainlink'],['polygon-ecosystem-token','pol','Polygon'],
- ['litecoin','ltc','Litecoin'],['shiba-inu','shib','Shiba Inu'],['avalanche-2','avax','Avalanche'],
- ['uniswap','uni','Uniswap'],['stellar','xlm','Stellar'],['monero','xmr','Monero'],
- ['cosmos','atom','Cosmos'],['near','near','NEAR'],['aptos','apt','Aptos'],
- ['arbitrum','arb','Arbitrum'],['optimism','op','Optimism'],['pepe','pepe','Pepe'],
- ['tether','usdt','Tether'],['usd-coin','usdc','USD Coin'],['dai','dai','Dai'],
- ['aave','aave','Aave'],['maker','mkr','Maker'],['injective-protocol','inj','Injective'],
- ['sui','sui','Sui'],['kaspa','kas','Kaspa'],['render-token','rndr','Render'],
- ['pancakeswap-token','cake','PancakeSwap'],['the-open-network','ton','Toncoin'],['hedera-hashgraph','hbar','Hedera']
-].map(([id,sym,name])=>({id,sym,name,icon:null}));
-function coinRowHTML(c){ return `<div class="row" onclick='pickCoin(${JSON.stringify(JSON.stringify(c))})'>
-  <div class="coinicon">${c.icon?`<img src="${esc(c.icon)}">`:esc(c.sym[0].toUpperCase())}</div>
-  <div class="rmain"><div class="rname">${esc(c.name)}</div><div class="rsub">${esc(c.sym.toUpperCase())}</div></div></div>`; }
-let searchT=null, searchSeq=0;
-function debounceSearch(){ clearTimeout(searchT); searchT=setTimeout(searchCoins,600); }
-async function searchCoins(){
-  const q=$('coinSearch').value.trim().toLowerCase(); if(q.length<2) return;
-  const seq=++searchSeq;
-  const local=LOCAL_COINS.filter(c=>c.sym.includes(q)||c.name.toLowerCase().includes(q)||c.id.includes(q));
-  $('coinResults').innerHTML=local.map(coinRowHTML).join('')||'<div class="rsub skel" style="padding:10px">Searching…</div>';
-  // API only adds coins the local list doesn't have
-  const tryApi=async()=>{ const r=await jget('https://api.coingecko.com/api/v3/search?query='+encodeURIComponent(q));
-    return (r.coins||[]).slice(0,8).map(c=>({id:c.id,sym:c.symbol,name:c.name,icon:c.thumb})); };
-  try{
-    let api; try{ api=await tryApi(); }
-    catch(e){ await new Promise(r=>setTimeout(r,1500)); api=await tryApi(); } // one retry after rate-limit
-    if(seq!==searchSeq) return; // stale response
-    const seen=new Set(local.map(c=>c.id));
-    const merged=[...local, ...api.filter(c=>!seen.has(c.id))];
-    $('coinResults').innerHTML=merged.map(coinRowHTML).join('')||'<div class="rsub" style="padding:10px">No results</div>';
-  }catch(e){ if(seq!==searchSeq) return;
-    if(!local.length) $('coinResults').innerHTML='<div class="rsub" style="padding:10px">Rate-limited by CoinGecko — wait ~1 min & retry. Popular coins still work instantly.</div>';
+function render() {
+  entryList.innerHTML = '';
+  walletEntryList.innerHTML = '';
+  emptyState.style.display = (holdings.length === 0 && wallets.length === 0) ? 'block' : 'none';
+
+  let total = 0;
+
+  holdings.forEach((h, idx) => {
+    const price = prices[h.id];
+    const value = price ? price * h.amount : null;
+    if (value) total += value;
+
+    const row = document.createElement('div');
+    row.className = 'entry';
+
+    const priceStr = price
+      ? '$' + price.toLocaleString('en-US', { maximumFractionDigits: price < 1 ? 6 : 2 }) + ' / coin'
+      : 'no price yet';
+
+    const valueStr = value !== null
+      ? '$' + value.toLocaleString('en-US', { maximumFractionDigits: 2 })
+      : '—';
+
+    row.innerHTML = `
+      <div class="entry-left">
+        <div class="entry-symbol">${h.symbol}</div>
+        <div class="entry-amount">${fmtAmount(h.amount)}</div>
+      </div>
+      <div class="entry-right">
+        <div>
+          <div class="entry-value">${valueStr}</div>
+          <div class="entry-price">${priceStr}</div>
+        </div>
+        <button class="del-btn" data-idx="${idx}">×</button>
+      </div>
+    `;
+    entryList.appendChild(row);
+  });
+
+  wallets.forEach((w, idx) => {
+    const meta = CHAIN_META[w.chain];
+    const price = prices[meta.id];
+    const balance = w.balance;
+    const value = (price && balance !== null && balance !== undefined) ? price * balance : null;
+    if (value) total += value;
+
+    const row = document.createElement('div');
+    row.className = 'entry';
+
+    const priceStr = balance === null || balance === undefined
+      ? (w.error || 'not fetched yet')
+      : (price ? '$' + price.toLocaleString('en-US', { maximumFractionDigits: price < 1 ? 6 : 2 }) + ' / coin' : 'no price yet');
+
+    const valueStr = value !== null
+      ? '$' + value.toLocaleString('en-US', { maximumFractionDigits: 2 })
+      : '—';
+
+    const shortAddr = w.address.length > 14
+      ? w.address.slice(0, 6) + '…' + w.address.slice(-4)
+      : w.address;
+
+    row.innerHTML = `
+      <div class="entry-left">
+        <span class="chain-badge">${meta.label}</span>
+        <div class="wallet-addr">${shortAddr}${balance !== null && balance !== undefined ? ' · ' + fmtAmount(balance) : ''}</div>
+      </div>
+      <div class="entry-right">
+        <div>
+          <div class="entry-value">${valueStr}</div>
+          <div class="entry-price">${priceStr}</div>
+        </div>
+        <button class="del-btn" data-widx="${idx}">×</button>
+      </div>
+    `;
+    walletEntryList.appendChild(row);
+  });
+
+  const t = fmtUSD(total);
+  totalValueEl.innerHTML = `${t.whole}<span class="cents">${t.cents}</span>`;
+
+  renderChangeBadge(total);
+  updateAndRenderAchievements(total);
+
+  document.querySelectorAll('.del-btn[data-idx]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.dataset.idx);
+      holdings.splice(idx, 1);
+      saveHoldings();
+      render();
+    });
+  });
+
+  document.querySelectorAll('.del-btn[data-widx]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.dataset.widx);
+      wallets.splice(idx, 1);
+      saveWallets();
+      render();
+    });
+  });
+
+  if (lastUpdated) {
+    updatedAtEl.textContent = 'Prices as of ' + lastUpdated.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
   }
 }
-function pickCoin(j){ selCoin=JSON.parse(j); $('coinPick').style.display='block';
-  $('coinSearch').value=selCoin.name; $('coinResults').innerHTML=''; $('coinAmt').focus(); }
-function confirmCoin(){
-  const amt=parseFloat($('coinAmt').value);
-  if(!selCoin||!amt||amt<=0){ toast('Pick a coin & amount'); return; }
-  S.manual.push({...selCoin, amt}); addXP(25); save(); closeModals();
-  toast('+25 XP · '+selCoin.sym.toUpperCase()+' stashed'); $('coinAmt').value='';
-  refreshAll();
-}
-function confirmWallet(){
-  const name=$('wName').value.trim()||'Wallet '+(S.wallets.length+1);
-  const addr=$('wAddr').value.trim();
-  if(!/^0x[a-fA-F0-9]{40}$/.test(addr)){ toast('Invalid 0x address'); return; }
-  if(S.wallets.some(w=>w.addr.toLowerCase()===addr.toLowerCase())){ toast('Already tracking that one'); return; }
-  S.wallets.push({name, addr, chains:[...selChains]}); addXP(50); save(); closeModals();
-  $('wName').value=''; $('wAddr').value='';
-  toast('+50 XP · Radar locked on'); go('home'); refreshAll();
-}
-function delWallet(i){ if(confirm('Stop tracking '+S.wallets[i].name+'?')){ S.wallets.splice(i,1); save(); render(); } }
-function delManual(i){ S.manual.splice(i,1); save(); render(); }
-function openTokModal(){ $('tokModal').classList.add('open'); $('tokAddr').value=''; }
-function delToken(i){ S.custom.splice(i,1); save(); render(); }
-async function confirmToken(){
-  const c=$('tokAddr').value.trim();
-  if(!/^0x[a-fA-F0-9]{40}$/.test(c)){ toast('Invalid contract address'); return; }
-  S.custom=S.custom||[];
-  if(S.custom.some(t=>t.contract.toLowerCase()===c.toLowerCase())||
-     BSC_TOKENS.some(t=>t.contract.toLowerCase()===c.toLowerCase())){ toast('Already on the watchlist'); return; }
-  $('tokBtn').textContent='SCANNING…';
-  try{
-    const url=CHAINS.bnb.rpc;
-    const [symHex,decHex]=await Promise.all([
-      rpc(url,'eth_call',[{to:c,data:'0x95d89b41'},'latest']),
-      rpc(url,'eth_call',[{to:c,data:'0x313ce567'},'latest'])]);
-    const sym=decodeStr(symHex)||'TOKEN', dec=parseInt(decHex,16)||18;
-    S.custom.push({sym, name:sym, contract:c, dec}); addXP(15); save(); closeModals();
-    toast('+15 XP · '+sym+' on watchlist'); render(); refreshAll();
-  }catch(e){ toast('Contract not readable — check address'); }
-  $('tokBtn').textContent='SCAN & ADD';
+
+function renderChangeBadge(total) {
+  const pctById = changePercents[selectedTimeframe] || {};
+
+  // Portfolio change = weighted average of each coin's % change, weighted by its
+  // current dollar value (today's snapshot of allocation).
+  let weightedSum = 0;
+  let knownValue = 0;
+
+  holdings.forEach(h => {
+    const price = prices[h.id];
+    const pct = h.id ? pctById[h.id] : null;
+    if (price && pct !== null && pct !== undefined) {
+      const value = price * h.amount;
+      weightedSum += value * pct;
+      knownValue += value;
+    }
+  });
+
+  wallets.forEach(w => {
+    const meta = CHAIN_META[w.chain];
+    const price = prices[meta.id];
+    const pct = pctById[meta.id];
+    if (price && w.balance && pct !== null && pct !== undefined) {
+      const value = price * w.balance;
+      weightedSum += value * pct;
+      knownValue += value;
+    }
+  });
+
+  if (total <= 0 || knownValue === 0) {
+    changeBadge.className = 'change-badge pending';
+    changeBadge.textContent = selectedTimeframe === '6m' && sixMonthFetchedAt === 0
+      ? 'loading 6mo data…'
+      : 'no data yet';
+    return;
+  }
+
+  const pct = weightedSum / knownValue;
+  const sign = pct > 0 ? '▲' : pct < 0 ? '▼' : '●';
+  const cls = pct > 0.005 ? 'up' : pct < -0.005 ? 'down' : 'flat';
+  changeBadge.className = 'change-badge ' + cls;
+  changeBadge.textContent = `${sign} ${Math.abs(pct).toFixed(2)}%`;
+
+  // If some holdings don't have data for this timeframe yet, note it's partial.
+  if (knownValue < total * 0.999) {
+    changeBadge.textContent += ' (partial)';
+  }
 }
 
-/* ============ boot ============ */
-document.querySelectorAll('[data-ic]').forEach(el=>{ el.innerHTML=icon(el.dataset.ic, Number(el.dataset.sz)||20); });
-render();
-if(S.wallets.length||S.manual.length) refreshAll();
-setInterval(()=>{ if(!document.hidden) refreshAll(); }, 120000);
-document.addEventListener('visibilitychange',()=>{ if(!document.hidden&&(S.wallets.length||S.manual.length)) refreshAll(); });
+timeframeTabs.addEventListener('click', (e) => {
+  const btn = e.target.closest('.tf-btn');
+  if (!btn) return;
+  selectedTimeframe = btn.dataset.tf;
+  document.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+});
+
+async function resolveId(symbol) {
+  const upper = symbol.toUpperCase();
+  if (KNOWN_IDS[upper]) return KNOWN_IDS[upper];
+
+  // Fallback: search CoinGecko for the symbol
+  try {
+    const res = await fetch(`https://api.coingecko.com/api/v3/search?query=${encodeURIComponent(symbol)}`);
+    const data = await res.json();
+    if (data.coins && data.coins.length > 0) {
+      const exact = data.coins.find(c => c.symbol.toUpperCase() === upper);
+      return (exact || data.coins[0]).id;
+    }
+  } catch (e) {
+    console.error('Search failed', e);
+  }
+  return null;
+}
+
+async function fetchPrices() {
+  const ids = new Set(holdings.map(h => h.id).filter(Boolean));
+  wallets.forEach(w => ids.add(CHAIN_META[w.chain].id));
+  const idList = [...ids];
+  if (idList.length === 0) return;
+
+  refreshBtn.disabled = true;
+  refreshBtn.textContent = '↻ fetching…';
+
+  try {
+    // /coins/markets gives current price plus 24h/7d/30d/1y % change in one call.
+    const res = await fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${idList.join(',')}&price_change_percentage=24h,7d,30d,1y`);
+    const data = await res.json();
+    data.forEach(coin => {
+      prices[coin.id] = coin.current_price;
+      changePercents['24h'][coin.id] = coin.price_change_percentage_24h_in_currency ?? null;
+      changePercents['7d'][coin.id] = coin.price_change_percentage_7d_in_currency ?? null;
+      changePercents['30d'][coin.id] = coin.price_change_percentage_30d_in_currency ?? null;
+      changePercents['1y'][coin.id] = coin.price_change_percentage_1y_in_currency ?? null;
+    });
+    lastUpdated = new Date();
+  } catch (e) {
+    updatedAtEl.textContent = 'Could not fetch prices — check your connection';
+  }
+
+  await fetchWalletBalances();
+  render();
+
+  // 6-month change isn't offered by the markets endpoint, and computing it needs a
+  // separate historical-chart call per coin, so fetch it lazily and cache for an hour.
+  if (Date.now() - sixMonthFetchedAt > 60 * 60 * 1000) {
+    fetchSixMonthChange(idList).then(render);
+  }
+
+  refreshBtn.disabled = false;
+  refreshBtn.textContent = '↻ refresh prices';
+}
+
+async function fetchSixMonthChange(idList) {
+  sixMonthFetchedAt = Date.now();
+  await Promise.all(idList.map(async (id) => {
+    try {
+      const res = await fetch(`https://api.coingecko.com/api/v3/coins/${id}/market_chart?vs_currency=usd&days=180&interval=daily`);
+      const data = await res.json();
+      const points = data.prices; // [ [timestamp, price], ... ]
+      if (points && points.length > 1) {
+        const startPrice = points[0][1];
+        const latestPrice = prices[id] ?? points[points.length - 1][1];
+        changePercents['6m'][id] = startPrice > 0 ? ((latestPrice - startPrice) / startPrice) * 100 : null;
+      }
+    } catch (e) {
+      // leave whatever was cached before; badge just shows "—" if nothing's there yet
+    }
+  }));
+}
+
+async function fetchWalletBalances() {
+  await Promise.all(wallets.map(async (w) => {
+    try {
+      if (w.chain === 'btc') {
+        const res = await fetch(`https://blockchain.info/balance?active=${w.address}&cors=true`);
+        const data = await res.json();
+        const sats = data[w.address]?.final_balance;
+        w.balance = sats !== undefined ? sats / 1e8 : null;
+        w.error = sats === undefined ? 'address not found' : null;
+      } else if (w.chain === 'eth') {
+        const res = await fetch(`https://api.blockcypher.com/v1/eth/main/addrs/${w.address}/balance`);
+        const data = await res.json();
+        w.balance = data.balance !== undefined ? data.balance / 1e18 : null;
+        w.error = data.balance === undefined ? 'address not found' : null;
+      } else if (w.chain === 'sol') {
+        const res = await fetch('https://api.mainnet-beta.solana.com', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'getBalance', params: [w.address] })
+        });
+        const data = await res.json();
+        const lamports = data.result?.value;
+        w.balance = lamports !== undefined ? lamports / 1e9 : null;
+        w.error = lamports === undefined ? 'address not found' : null;
+      } else if (w.chain === 'rhc') {
+        // Robinhood Chain is an EVM Layer 2 (chain ID 4663) with ETH as its gas
+        // token. Its official public RPC needs no account or API key, same as
+        // any standard Ethereum JSON-RPC endpoint.
+        const res = await fetch('https://rpc.mainnet.chain.robinhood.com', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_getBalance', params: [w.address, 'latest'] })
+        });
+        const data = await res.json();
+        const weiHex = data.result;
+        w.balance = weiHex ? parseInt(weiHex, 16) / 1e18 : null;
+        w.error = !weiHex ? 'address not found' : null;
+      }
+    } catch (e) {
+      w.error = 'fetch failed — try again';
+      w.balance = w.balance ?? null;
+    }
+  }));
+  await saveWallets();
+}
+
+addBtn.addEventListener('click', async () => {
+  const symbol = symbolInput.value.trim().toUpperCase();
+  const amount = parseFloat(amountInput.value);
+
+  statusMsg.textContent = '';
+  statusMsg.className = 'status';
+
+  if (!symbol) {
+    statusMsg.textContent = 'Enter a coin symbol, e.g. BTC';
+    statusMsg.className = 'status err';
+    return;
+  }
+  if (!amount || amount <= 0) {
+    statusMsg.textContent = 'Enter a valid amount';
+    statusMsg.className = 'status err';
+    return;
+  }
+
+  addBtn.disabled = true;
+  statusMsg.textContent = 'Looking up ' + symbol + '…';
+
+  const id = await resolveId(symbol);
+
+  if (!id) {
+    statusMsg.textContent = `Couldn't find "${symbol}" — added anyway, add a price manually isn't supported yet, try refresh later`;
+    statusMsg.className = 'status err';
+  } else {
+    statusMsg.textContent = symbol + ' added';
+    statusMsg.className = 'status ok';
+  }
+
+  holdings.push({ symbol, amount, id });
+  await saveHoldings();
+  symbolInput.value = '';
+  amountInput.value = '';
+  render();
+  addBtn.disabled = false;
+
+  if (id) fetchPrices();
+});
+
+refreshBtn.addEventListener('click', fetchPrices);
+
+amountInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') addBtn.click();
+});
+
+// Some mobile keyboards (esp. Android, non-US locales) send a comma instead of a
+// period for the decimal separator, or allow multiple separators to be typed.
+// Normalize on every keystroke so decimal amounts always work.
+amountInput.addEventListener('input', () => {
+  let v = amountInput.value.replace(',', '.');   // comma -> period
+  v = v.replace(/[^0-9.]/g, '');                  // strip anything but digits/period
+  const firstDot = v.indexOf('.');
+  if (firstDot !== -1) {
+    // keep only the first period, drop any extras
+    v = v.slice(0, firstDot + 1) + v.slice(firstDot + 1).replace(/\./g, '');
+  }
+  if (v !== amountInput.value) amountInput.value = v;
+});
+
+addWalletBtn.addEventListener('click', async () => {
+  const chain = chainSelect.value;
+  const address = addressInput.value.trim();
+
+  walletStatusMsg.textContent = '';
+  walletStatusMsg.className = 'status';
+
+  if (!address) {
+    walletStatusMsg.textContent = 'Paste a public wallet address';
+    walletStatusMsg.className = 'status err';
+    return;
+  }
+
+  const alreadyTracked = wallets.some(w => w.chain === chain && w.address.toLowerCase() === address.toLowerCase());
+  if (alreadyTracked) {
+    walletStatusMsg.textContent = 'Already tracking that address';
+    walletStatusMsg.className = 'status err';
+    return;
+  }
+
+  addWalletBtn.disabled = true;
+  walletStatusMsg.textContent = 'Fetching balance…';
+
+  wallets.push({ chain, address, balance: null, error: null });
+  await saveWallets();
+  addressInput.value = '';
+  render();
+
+  await fetchPrices();
+
+  walletStatusMsg.textContent = 'Wallet added';
+  walletStatusMsg.className = 'status ok';
+  addWalletBtn.disabled = false;
+});
+
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('panel-' + tab.dataset.panel).classList.add('active');
+  });
+});
+
+viewTabs.addEventListener('click', (e) => {
+  const btn = e.target.closest('.view-tab');
+  if (!btn) return;
+  const target = btn.dataset.view;
+  document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('view-' + target).classList.add('active');
+  if (target === 'news' && newsList.children.length === 0) fetchQuantumNews();
+  if (target === 'rhchain') {
+    if (rhNewsList.children.length === 0) fetchRobinhoodNews();
+    if (gainersList.children.length === 0 && losersList.children.length === 0) fetchTrendingTokens();
+  }
+  if (target === 'qanx' && qanxTopList.children.length === 0) fetchQanxTopHolders();
+});
+
+function stripHtml(str) {
+  const div = document.createElement('div');
+  div.innerHTML = str || '';
+  return (div.textContent || div.innerText || '').trim();
+}
+
+function parseRssXml(xmlText) {
+  const doc = new DOMParser().parseFromString(xmlText, 'text/xml');
+  if (doc.querySelector('parsererror')) return [];
+  return [...doc.querySelectorAll('item')].map(item => ({
+    title: item.querySelector('title')?.textContent || '',
+    link: item.querySelector('link')?.textContent || '',
+    pubDate: item.querySelector('pubDate')?.textContent || '',
+    description: stripHtml(item.querySelector('description')?.textContent || ''),
+    source: item.querySelector('source')?.textContent || ''
+  }));
+}
+
+// Public, no-signup ways to read an RSS feed from the browser (CORS proxies /
+// converters). Tried in order — first one that works wins.
+async function fetchNewsFeed(searchTerm) {
+  const feedUrl = `https://news.google.com/rss/search?q=${encodeURIComponent(searchTerm)}&hl=en-US&gl=US&ceid=US:en`;
+  const sources = [
+    { kind: 'rss2json', url: `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feedUrl)}` },
+    { kind: 'raw-xml',  url: `https://api.allorigins.win/raw?url=${encodeURIComponent(feedUrl)}` },
+    { kind: 'raw-xml',  url: `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(feedUrl)}` },
+  ];
+
+  for (const src of sources) {
+    try {
+      const res = await fetch(src.url);
+      if (!res.ok) continue;
+
+      if (src.kind === 'rss2json') {
+        const data = await res.json();
+        if (data.status === 'ok' && Array.isArray(data.items) && data.items.length > 0) {
+          return data.items.map(it => ({
+            title: it.title,
+            link: it.link,
+            pubDate: it.pubDate,
+            description: stripHtml(it.description),
+            source: (it.author || '').trim()
+          }));
+        }
+      } else {
+        const text = await res.text();
+        const parsed = parseRssXml(text);
+        if (parsed.length > 0) return parsed;
+      }
+    } catch (e) {
+      // try the next source
+    }
+  }
+  return null;
+}
+
+function renderNewsInto(articles, listEl, emptyEl, updatedEl, errorText) {
+  if (!articles || articles.length === 0) {
+    updatedEl.textContent = errorText;
+    listEl.innerHTML = '';
+    emptyEl.style.display = 'block';
+    return;
+  }
+
+  emptyEl.style.display = 'none';
+  updatedEl.textContent = 'Updated ' + new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  listEl.innerHTML = '';
+
+  articles.slice(0, 20).forEach(a => {
+    // Google News RSS titles are "Headline - Publisher"; split those apart for display.
+    let title = a.title;
+    let source = a.source;
+    const dashIdx = title.lastIndexOf(' - ');
+    if (!source && dashIdx > -1) {
+      source = title.slice(dashIdx + 3);
+      title = title.slice(0, dashIdx);
+    }
+    const dateStr = a.pubDate ? new Date(a.pubDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+
+    const card = document.createElement('a');
+    card.className = 'news-card';
+    card.href = a.link;
+    card.target = '_blank';
+    card.rel = 'noopener noreferrer';
+    card.innerHTML = `
+      <div class="news-title">${title}</div>
+      <div class="news-meta">${[source, dateStr].filter(Boolean).join(' · ')}</div>
+      ${a.description ? `<div class="news-snippet">${a.description.slice(0, 180)}${a.description.length > 180 ? '…' : ''}</div>` : ''}
+    `;
+    listEl.appendChild(card);
+  });
+}
+
+async function fetchQuantumNews() {
+  newsRefreshBtn.disabled = true;
+  newsRefreshBtn.textContent = '↻ fetching…';
+  newsUpdatedAt.textContent = 'Fetching latest headlines…';
+
+  const articles = await fetchNewsFeed('"quantum computing"');
+
+  newsRefreshBtn.disabled = false;
+  newsRefreshBtn.textContent = '↻ refresh news';
+  renderNewsInto(articles, newsList, newsEmpty, newsUpdatedAt, 'Could not load news — try refresh again');
+}
+
+async function fetchRobinhoodNews() {
+  rhNewsRefreshBtn.disabled = true;
+  rhNewsRefreshBtn.textContent = '↻ fetching…';
+  rhNewsUpdatedAt.textContent = 'Fetching latest headlines…';
+
+  const articles = await fetchNewsFeed('"Robinhood Chain"');
+
+  rhNewsRefreshBtn.disabled = false;
+  rhNewsRefreshBtn.textContent = '↻ refresh news';
+  renderNewsInto(articles, rhNewsList, rhNewsEmpty, rhNewsUpdatedAt, 'Could not load news — try refresh again');
+}
+
+newsRefreshBtn.addEventListener('click', fetchQuantumNews);
+rhNewsRefreshBtn.addEventListener('click', fetchRobinhoodNews);
+
+// DEX Screener has no single "list every pair on this chain" endpoint, so this
+// searches a handful of broad terms likely to surface Robinhood Chain pairs,
+// merges and dedupes the results, then filters down to that chain client-side.
+const TRENDING_SEARCH_TERMS = ['robinhood', 'weth robinhood', 'usdg', 'hood'];
+const TRENDING_MIN_LIQUIDITY_USD = 5000; // filters out illiquid/dust pairs that swing wildly on noise
+
+async function fetchTrendingTokens() {
+  trendingRefreshBtn.disabled = true;
+  trendingRefreshBtn.textContent = '↻ fetching…';
+  trendingUpdatedAt.textContent = 'Fetching trending tokens…';
+
+  const seenPairs = new Map();
+
+  await Promise.all(TRENDING_SEARCH_TERMS.map(async (term) => {
+    try {
+      const res = await fetch(`https://api.dexscreener.com/latest/dex/search?q=${encodeURIComponent(term)}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      (data.pairs || []).forEach(p => {
+        if (p.chainId === 'robinhood' && p.pairAddress && !seenPairs.has(p.pairAddress)) {
+          seenPairs.set(p.pairAddress, p);
+        }
+      });
+    } catch (e) {
+      // try the other search terms
+    }
+  }));
+
+  trendingRefreshBtn.disabled = false;
+  trendingRefreshBtn.textContent = '↻ refresh tokens';
+
+  const pairs = [...seenPairs.values()].filter(p =>
+    p.priceChange && typeof p.priceChange.h24 === 'number' &&
+    p.liquidity && p.liquidity.usd >= TRENDING_MIN_LIQUIDITY_USD
+  );
+
+  if (pairs.length === 0) {
+    trendingUpdatedAt.textContent = 'Could not load token data — try refresh again';
+    gainersList.innerHTML = '';
+    losersList.innerHTML = '';
+    trendingEmpty.style.display = 'block';
+    return;
+  }
+
+  trendingEmpty.style.display = 'none';
+  trendingUpdatedAt.textContent = 'Updated ' + new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+    + ` · ${pairs.length} pairs sampled`;
+
+  const sorted = [...pairs].sort((a, b) => b.priceChange.h24 - a.priceChange.h24);
+  const gainers = sorted.slice(0, 10);
+  const losers = sorted.slice(-10).reverse();
+
+  renderTokenList(gainers, gainersList, 'up');
+  renderTokenList(losers, losersList, 'down');
+}
+
+function renderTokenList(pairs, listEl, direction) {
+  listEl.innerHTML = '';
+  pairs.forEach(p => {
+    const pct = p.priceChange.h24;
+    const priceStr = p.priceUsd ? '$' + parseFloat(p.priceUsd).toLocaleString('en-US', { maximumFractionDigits: parseFloat(p.priceUsd) < 1 ? 6 : 2 }) : '—';
+
+    const row = document.createElement('a');
+    row.className = 'token-row';
+    row.href = p.url || '#';
+    row.target = '_blank';
+    row.rel = 'noopener noreferrer';
+    row.innerHTML = `
+      <div class="token-left">
+        <div class="token-symbol">${p.baseToken?.symbol || '?'}</div>
+        <div class="token-pair">${p.baseToken?.name || ''} · ${p.dexId || ''}</div>
+      </div>
+      <div class="token-right">
+        <div class="token-change ${direction}">${pct > 0 ? '+' : ''}${pct.toFixed(2)}%</div>
+        <div class="token-price">${priceStr}</div>
+      </div>
+    `;
+    listEl.appendChild(row);
+  });
+}
+
+trendingRefreshBtn.addEventListener('click', fetchTrendingTokens);
+
+// --- QANX holder rank -------------------------------------------------
+// QANX is an ERC20/BEP20 token deployed at the same address on both
+// Ethereum and BNB Smart Chain (per QANplatform's official contract repo).
+const QANX_CONTRACT = '0xAAA9214F675316182Eaa21C85f0Ca99160CC3AAA';
+const QANX_DECIMALS = 18;
+
+// Public, no-key RPC endpoints. Tried in order.
+const ETH_RPC_URLS = ['https://ethereum.publicnode.com', 'https://eth.llamarpc.com'];
+const BSC_RPC_URLS = ['https://bsc.publicnode.com', 'https://bsc-dataseed.binance.org'];
+
+// Reference points for the BSC approximation, sourced from public explorer
+// snapshots. These drift over time — that's exactly why the BSC number is
+// labeled approximate rather than exact.
+const BSC_QANX_APPROX_HOLDERS = 18897;
+const BSC_QANX_APPROX_MAX_HOLDER_BALANCE = 1100000000; // largest known holder (treasury-scale wallet)
+
+async function fetchErc20Balance(rpcUrls, address) {
+  const data = '0x70a08231' + address.slice(2).toLowerCase().padStart(64, '0');
+  for (const url of rpcUrls) {
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_call', params: [{ to: QANX_CONTRACT, data }, 'latest'] })
+      });
+      const json = await res.json();
+      if (json.result && json.result !== '0x') return BigInt(json.result);
+    } catch (e) {
+      // try the next RPC
+    }
+  }
+  return null;
+}
+
+// Fetches up to `limit` QANX holders on Ethereum, sorted by balance, from a
+// free public block explorer (no API key). Used both for the leaderboard and
+// for finding a specific address's exact rank.
+let ethHoldersCache = [];
+async function fetchEthTopHolders(limit = 1000) {
+  const holders = [];
+  let query = '';
+  for (let page = 0; page < 20 && holders.length < limit; page++) {
+    try {
+      const res = await fetch(`https://eth.blockscout.com/api/v2/tokens/${QANX_CONTRACT}/holders${query}`);
+      if (!res.ok) break;
+      const data = await res.json();
+      (data.items || []).forEach(it => {
+        if (it.address?.hash) holders.push({ address: it.address.hash, value: it.value });
+      });
+      if (!data.next_page_params) break;
+      query = '?' + new URLSearchParams(data.next_page_params).toString();
+    } catch (e) {
+      break;
+    }
+  }
+  ethHoldersCache = holders;
+  return holders;
+}
+
+// Zipf's law-style estimate: in real token holder distributions, balance
+// roughly follows balance(rank) ≈ maxBalance / rank — a small number of
+// wallets hold most of the supply, and it falls off sharply from there. That
+// means rank ≈ maxBalance / balance. (The previous version interpolated
+// linearly across log10(balance), which badly overstated rank for anyone
+// without a near-whale-sized balance — a modest holder isn't 300th place out
+// of ~19,000, it's much further down, since the distribution is so
+// front-loaded.) This is still a heuristic, not a measured distribution, so
+// treat the result as order-of-magnitude only.
+function estimateBscRank(balanceTokens) {
+  if (!balanceTokens || balanceTokens <= 0) return BSC_QANX_APPROX_HOLDERS;
+  const rank = BSC_QANX_APPROX_MAX_HOLDER_BALANCE / balanceTokens;
+  return Math.max(1, Math.min(BSC_QANX_APPROX_HOLDERS, Math.round(rank)));
+}
+
+async function checkEthRank() {
+  const address = qanxEthInput.value.trim();
+  qanxEthStatus.textContent = '';
+  qanxEthStatus.className = 'status';
+  if (!address) {
+    qanxEthStatus.textContent = 'Paste an Ethereum address';
+    qanxEthStatus.className = 'status err';
+    return;
+  }
+
+  qanxEthBtn.disabled = true;
+  qanxEthBtn.textContent = 'Checking…';
+  qanxEthResult.innerHTML = '';
+
+  const [holders, balanceRaw] = await Promise.all([
+    ethHoldersCache.length > 0 ? Promise.resolve(ethHoldersCache) : fetchEthTopHolders(1000),
+    fetchErc20Balance(ETH_RPC_URLS, address)
+  ]);
+
+  qanxEthBtn.disabled = false;
+  qanxEthBtn.textContent = 'Check ETH rank';
+
+  const balance = balanceRaw !== null ? Number(balanceRaw) / (10 ** QANX_DECIMALS) : null;
+  const idx = holders.findIndex(h => h.address.toLowerCase() === address.toLowerCase());
+
+  if (idx === -1) {
+    qanxEthResult.innerHTML = `
+      <div class="rank-result">
+        <div class="rank-detail">Not found in the top ${holders.length.toLocaleString()} holders (exact rank beyond that isn't available for free).</div>
+        ${balance !== null ? `<div class="rank-detail">Balance: ${balance.toLocaleString('en-US', { maximumFractionDigits: 2 })} QANX</div>` : ''}
+      </div>
+    `;
+    saveQanxWallet('eth', address);
+    return;
+  }
+
+  const rank = idx + 1;
+  qanxEthResult.innerHTML = `
+    <div class="rank-result">
+      <div class="rank-number">#${rank.toLocaleString()}</div>
+      <div class="rank-detail">of ${holders.length.toLocaleString()}+ tracked holders · ${balance !== null ? balance.toLocaleString('en-US', { maximumFractionDigits: 2 }) + ' QANX' : ''}</div>
+    </div>
+  `;
+  saveQanxWallet('eth', address);
+  recordQanxRank(rank);
+}
+
+async function checkBscRank() {
+  const address = qanxBscInput.value.trim();
+  qanxBscStatus.textContent = '';
+  qanxBscStatus.className = 'status';
+  if (!address) {
+    qanxBscStatus.textContent = 'Paste a BSC address';
+    qanxBscStatus.className = 'status err';
+    return;
+  }
+
+  qanxBscBtn.disabled = true;
+  qanxBscBtn.textContent = 'Checking…';
+  qanxBscResult.innerHTML = '';
+
+  const balanceRaw = await fetchErc20Balance(BSC_RPC_URLS, address);
+
+  qanxBscBtn.disabled = false;
+  qanxBscBtn.textContent = 'Check BSC rank';
+
+  if (balanceRaw === null) {
+    qanxBscStatus.textContent = 'Could not read balance — try again';
+    qanxBscStatus.className = 'status err';
+    return;
+  }
+
+  const balance = Number(balanceRaw) / (10 ** QANX_DECIMALS);
+  const rank = estimateBscRank(balance);
+
+  qanxBscResult.innerHTML = `
+    <div class="rank-result">
+      <div class="rank-number">~#${rank.toLocaleString()}</div>
+      <div class="rank-detail">estimated of ~${BSC_QANX_APPROX_HOLDERS.toLocaleString()} holders · ${balance.toLocaleString('en-US', { maximumFractionDigits: 2 })} QANX</div>
+    </div>
+  `;
+  saveQanxWallet('bsc', address);
+  recordQanxRank(rank);
+}
+
+async function fetchQanxTopHolders() {
+  qanxTopRefreshBtn.disabled = true;
+  qanxTopRefreshBtn.textContent = '↻ fetching…';
+  qanxTopUpdatedAt.textContent = 'Fetching holder list…';
+
+  const holders = await fetchEthTopHolders(1000);
+
+  qanxTopRefreshBtn.disabled = false;
+  qanxTopRefreshBtn.textContent = '↻ refresh';
+
+  if (holders.length === 0) {
+    qanxTopUpdatedAt.textContent = 'Could not load holder data — try refresh again';
+    qanxTopList.innerHTML = '';
+    qanxTopEmpty.style.display = 'block';
+    return;
+  }
+
+  qanxTopEmpty.style.display = 'none';
+  qanxTopUpdatedAt.textContent = 'Updated ' + new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  qanxTopList.innerHTML = '';
+
+  holders.slice(0, 20).forEach((h, i) => {
+    const bal = Number(BigInt(h.value)) / (10 ** QANX_DECIMALS);
+    const shortAddr = h.address.slice(0, 6) + '…' + h.address.slice(-4);
+    const row = document.createElement('div');
+    row.className = 'token-row';
+    row.innerHTML = `
+      <div class="token-left">
+        <div class="token-symbol">#${i + 1}</div>
+        <div class="token-pair">${shortAddr}</div>
+      </div>
+      <div class="token-right">
+        <div class="token-price">${bal.toLocaleString('en-US', { maximumFractionDigits: 0 })} QANX</div>
+      </div>
+    `;
+    qanxTopList.appendChild(row);
+  });
+}
+
+async function saveQanxWallet(chain, address) {
+  try {
+    const r = await window.storage.get(QANX_WALLETS_KEY, false).catch(() => null);
+    const current = r ? JSON.parse(r.value) : {};
+    current[chain] = address;
+    await window.storage.set(QANX_WALLETS_KEY, JSON.stringify(current), false);
+  } catch (e) {
+    console.error('Save failed', e);
+  }
+}
+
+async function loadQanxWallets() {
+  try {
+    const r = await window.storage.get(QANX_WALLETS_KEY, false);
+    const saved = r ? JSON.parse(r.value) : {};
+    if (saved.eth) qanxEthInput.value = saved.eth;
+    if (saved.bsc) qanxBscInput.value = saved.bsc;
+  } catch (e) {
+    // no saved addresses yet
+  }
+}
+
+qanxEthBtn.addEventListener('click', checkEthRank);
+qanxBscBtn.addEventListener('click', checkBscRank);
+qanxTopRefreshBtn.addEventListener('click', fetchQanxTopHolders);
+loadQanxWallets();
+
+loadAchievementState().then(() => {
+  loadHoldings().then(() => {
+    if (holdings.length > 0 || wallets.length > 0) fetchPrices();
+  });
+});
 </script>
 </body>
 </html>
